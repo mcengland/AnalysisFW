@@ -33,7 +33,7 @@ endif()
 add_subdirectory(src)
 
 # The app code with the wrappers are here
-add_subdirectory(app)
+add_subdirectory(python)
 
 set(SETUP ${CMAKE_CURRENT_BINARY_DIR}/setup.sh)
 file(WRITE ${SETUP} "#!/bin/bash\n")

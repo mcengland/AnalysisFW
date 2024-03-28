@@ -25,11 +25,13 @@ void CLoop::Loop(double lumFactor, int z_sample, std::string key)
     // Create output file
     key = key+".root";
     createOutputFile(key);
+
     // Create BDT
     m_vbfBDT = VBFBDT("/Users/user/Documents/HEP/MVA-Analysis/dataset/weights/10Folds_BDT-0.3.weights.xml");
+
     // Create TTree
     bool saveHistograms = true;
-    bool saveEvents = true;   
+    bool saveEvents = false;   
     // loop over number of entries
     for (Long64_t jentry=0; jentry<nLoop;jentry++) {
         Long64_t ientry = LoadTree(jentry);

@@ -5,7 +5,7 @@ if( EXISTS "${Boost_INCLUDE_DIR}/root" )
    list( APPEND CMAKE_INCLUDE_PATH "${ROOT_EXTRA_INCLUDE_DIR}" )
    list( APPEND CMAKE_LIBRARY_PATH "${ROOT_EXTRA_LIB_DIR}" )
 endif()
-find_package(Boost COMPONENTS python REQUIRED)
+find_package(Boost COMPONENTS python3 REQUIRED)
 find_package( Python3 COMPONENTS Development REQUIRED )
 
 

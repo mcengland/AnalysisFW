@@ -36,14 +36,14 @@ class CLoop {
    void FillTree(double weight, int z_sample, const std::string& sampleName);
    void createOutputFile(const std::string& key);
    CLoop(TTree *tree=0,std::string sample_name="");
-   virtual ~CLoop();
-   virtual Int_t    Cut(/*Long64_t entry*/);
-   virtual Int_t    GetEntry(Long64_t entry);
-   virtual Long64_t LoadTree(Long64_t entry);
-   virtual void     Init(TTree *tree,std::string sample_name="");
-   virtual void     Loop(double lumFactor, int z_sample, std::string key);
-   virtual Bool_t   Notify();
-   virtual void     Show(Long64_t entry = -1);
+   ~CLoop();
+   Int_t    Cut(/*Long64_t entry*/);
+   Int_t    GetEntry(Long64_t entry);
+   Long64_t LoadTree(Long64_t entry);
+   void     Init(TTree *tree,std::string sample_name="");
+   void     Loop(double lumFactor, int z_sample, std::string key);
+   Bool_t   Notify();
+   void     Show(Long64_t entry = -1);
 
    private:
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain

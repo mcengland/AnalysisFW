@@ -11,14 +11,15 @@
 
 class CLoopWrapper {
     public:
-    explicit CLoopWrapper(TTree* tree, const std::string& sampleName) {
-        m_cloop = std::make_shared<CLoop>(tree, sampleName);
-    }
+    explicit CLoopWrapper(long long unsigned int TTreePointer, std::string sampleName) :
+        m_cloop(std::make_shared<CLoop>(reinterpret_cast<TTree*>(TTreePointer), sampleName)) {};
+
+    ~CLoopWrapper() = default;
 
     void Loop(double lumFactor, int z_sample, std::string key){
         m_cloop->Loop(lumFactor, z_sample, key);
     }
-    
+
     private:
     std::shared_ptr<CLoop> m_cloop;
 

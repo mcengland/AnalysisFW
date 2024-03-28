@@ -3,16 +3,6 @@
 
 CLoop::CLoop(TTree *tree,std::string sample_name) : fChain(0)
 {
-// if parameter tree is not specified (or zero), connect the file
-// used to generate this class and read the Tree.
-   if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/media/diego/27AB07EC0C8BE0A7/DATA/v25/user.dbaronmo.v25.mc.361108.PoPy8_Ztt.M4.e3601_s3126_r10724_p3975.sv2_Le/user.dbaronmo.22673042._000001.LepUniv_ttbar.root");
-      if (!f || !f->IsOpen()) {
-         f = new TFile("/media/diego/27AB07EC0C8BE0A7/DATA/v25/user.dbaronmo.v25.mc.361108.PoPy8_Ztt.M4.e3601_s3126_r10724_p3975.sv2_Le/user.dbaronmo.22673042._000001.LepUniv_ttbar.root");
-      }
-      f->GetObject("NOMINAL",tree);
-
-   }
    Init(tree,sample_name);
 }
 
@@ -707,7 +697,7 @@ Bool_t CLoop::Notify()
    // is started when using PROOF. It is normally not necessary to make changes
    // to the generated code, but the routine can be extended by the
    // user if needed. The return value is currently not used.
-
+   std::cout << "Branches loaded fine" << std::endl;
    return kTRUE;
 }
 
