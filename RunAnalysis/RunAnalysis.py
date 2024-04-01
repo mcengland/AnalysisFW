@@ -35,8 +35,14 @@ import argparse
 
 # Load the C++ library
 sys.path.append('../build/python/.')
+from AnalysisFW import CLoop,CLoopConfig
 
-from AnalysisFW import CLoop
+# This is a hack to allow the C++ class to be pickled, see:
+# https://www.boost.org/doc/libs/1_84_0/libs/python/doc/html/reference/topics/pickle_support.html
+def CLoopConfig_getinitargs(self):
+  return (self.m_saveHistograms,self.m_saveEvents,self.m_reweightMjj,self.m_bdtWeightsPath)
+# now inject __getinitargs__ (Python is a dynamic language!)
+CLoopConfig.__getinitargs__ = CLoopConfig_getinitargs
 
 def getLuminosity(sampleName):
     if "2018" in sampleName:
@@ -119,8 +125,23 @@ def createOutputDirectory(outputPath,treeName,verbosity):
             print(DEBUG("Creating output for tree at: "), os.path.abspath(outputPath)+"/"+treeName)
         os.makedirs(outputPath+"/"+treeName)
 
+def createConfigObject(jobTypeArgument,verbosity):
+    makeHistograms = 'h' in jobTypeArgument
+    if verbosity=="DEBUG" and makeHistograms:
+        print(DEBUG("Making histograms!"))
+    makeNTuples = 'n' in jobTypeArgument
+    if verbosity=="DEBUG" and makeNTuples:
+        print(DEBUG("Making ntuples!"))
+    makeReweighting = 'r' in jobTypeArgument
+    if verbosity=="DEBUG" and makeReweighting:
+        print(DEBUG("Making reweighting!"))
+    mvaWeightsPath = "/Users/user/Documents/HEP/MVA-Analysis/dataset/weights/10Folds_BDT-0.3.weights.xml"
+    if verbosity=="DEBUG":
+        print(DEBUG("MVA weights path: "), mvaWeightsPath)
+    return CLoopConfig(makeHistograms,makeNTuples,makeReweighting,mvaWeightsPath)
 
-def runAnalysis(treeName,sampleName,verbosity,outputPath):
+
+def runAnalysis(treeName,sampleName,verbosity,outputPath,analysisConfig):
     # Get the absolute path of the file
     filePath = getAbsoluteFilePath(sampleName)
     if verbosity=="DEBUG":
@@ -146,14 +167,13 @@ def runAnalysis(treeName,sampleName,verbosity,outputPath):
         print(DEBUG("Normalisation weight: "), weight)
 
     analysis = CLoop(r.addressof(tree), sampleName)
-    analysis.Loop(weight, sampleID, sampleName)
+    analysis.Loop(weight, sampleID, sampleName,analysisConfig)
     del analysis
     file.Close()
     success = os.system("mv "+sampleName+".root "+outputPath+"/"+treeName+"/"+sampleName+treeName+".root")
     if success != 0:
         print("Error moving file to Results directory.")
         sys.exit(1)
-
 
 
 if __name__ == "__main__":
@@ -164,6 +184,7 @@ if __name__ == "__main__":
     executionMode.add_argument("--singleSample", help="Run over a single sample.",type=str,default="")
     parser.add_argument("--verbose", help="Verbosity level.",type=str,default="INFO",choices=["INFO","DEBUG"])
     parser.add_argument("--treeName", help="Name of the tree to run over.",type=str,default="NOMINAL")
+    parser.add_argument("--jobType", help="Type of job to run.",type=str,default="h",choices=["h","n","hn","hr","hnr"])
     parser.add_argument("--outputDir", help="Path of to the directory used to store the processed samples.",type=str,default="../Results")
     parser.add_argument("--j", help="Number of cores to use.",type=int,default=1)
     args = parser.parse_args()
@@ -178,16 +199,19 @@ if __name__ == "__main__":
     # Create the output directory
     createOutputDirectory(args.outputDir,args.treeName,verbosity)
 
+    # Create the config object to pass to CLoop
+    config = createConfigObject(args.jobType,verbosity)
+
     # If a single sample is chosen, run just over that
     if args.singleSample != "":
-        runAnalysis(args.treeName,args.singleSample,verbosity,args.outputDir)
+        runAnalysis(args.treeName,args.singleSample,verbosity,args.outputDir,config)
     else :
         # Select the correct datasets
         allData = []
         allMC = []
         getSamplesToRun(args.samples,allData,allMC)
-        dataTuple = product([args.treeName],allData,[verbosity],[args.outputDir])
-        mcTuple = product([args.treeName],allMC,[verbosity],[args.outputDir])
+        dataTuple = product([args.treeName],allData,[verbosity],[args.outputDir], [config])
+        mcTuple = product([args.treeName],allMC,[verbosity],[args.outputDir], [config])
 
         # Define number of cores
         nCPU = args.j if verbosity=="INFO" else 1

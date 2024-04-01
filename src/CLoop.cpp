@@ -2,11 +2,12 @@
 #include <TMacro.h>
 #include "ReweightingTools.h"
 #include "CLoop.h"
+#include "CLoopConfig.h"
 
 double is_inside_jets(TLorentzVector* jet, TLorentzVector* jet1, TLorentzVector* jet2);
 std::vector<std::string> split(const std::string& s, char delimiter);
 
-void CLoop::Loop(double lumFactor, int z_sample, std::string key)
+void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConfig& config)
 {
     clock_t startTime = clock(); // get start time
 
@@ -27,11 +28,11 @@ void CLoop::Loop(double lumFactor, int z_sample, std::string key)
     createOutputFile(key);
 
     // Create BDT
-    m_vbfBDT = VBFBDT("/Users/user/Documents/HEP/MVA-Analysis/dataset/weights/10Folds_BDT-0.3.weights.xml");
+    m_vbfBDT = VBFBDT(config.m_bdtWeightsPath);
 
     // Create TTree
-    bool saveHistograms = true;
-    bool saveEvents = false;   
+    bool saveHistograms = config.m_saveHistograms;
+    bool saveEvents = config.m_saveEvents;   
     // loop over number of entries
     for (Long64_t jentry=0; jentry<nLoop;jentry++) {
         Long64_t ientry = LoadTree(jentry);
@@ -62,7 +63,7 @@ void CLoop::Loop(double lumFactor, int z_sample, std::string key)
         double mjj_w = 1.0;
 
         // mjj reweighting
-        bool reweight_mjj = true;
+        bool reweight_mjj = config.m_reweightMjj;
         if (reweight_mjj){
             MC mcSample = static_cast<MC>(z_sample);
             if(mcSample == MC::PowHegPythia){
