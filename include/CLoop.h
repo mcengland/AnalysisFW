@@ -23,10 +23,10 @@
 #include "HistogramContainer.h"
 #include "VBFBDT.h"
 #include "OutputTree.h"
+#include "CLoopConfig.h"
 
 // Header file for the classes stored in the TTree if any.
 #include <TLorentzVector.h>
-
 
 class CLoop {
    public :
@@ -41,7 +41,7 @@ class CLoop {
    Int_t    GetEntry(Long64_t entry);
    Long64_t LoadTree(Long64_t entry);
    void     Init(TTree *tree,std::string sample_name="");
-   void     Loop(double lumFactor, int z_sample, std::string key);
+   void     Loop(float lumFactor, int z_sample, std::string key, const CLoopConfig& config);
    Bool_t   Notify();
    void     Show(Long64_t entry = -1);
 

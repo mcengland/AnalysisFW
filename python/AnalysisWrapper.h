@@ -7,6 +7,7 @@
 #include <TTree.h>
 #include <string>
 #include "CLoop.h"
+#include "CLoopConfig.h"
 
 
 class CLoopWrapper {
@@ -16,8 +17,8 @@ class CLoopWrapper {
 
     ~CLoopWrapper() = default;
 
-    void Loop(double lumFactor, int z_sample, std::string key){
-        m_cloop->Loop(lumFactor, z_sample, key);
+    void Loop(float lumFactor, int z_sample, std::string key, CLoopConfig config){
+        m_cloop->Loop(lumFactor, z_sample, key, config);
     }
 
     private:
