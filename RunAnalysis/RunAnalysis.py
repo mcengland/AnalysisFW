@@ -72,7 +72,11 @@ def getNormalise(sampleName,lumFactor):
 def getAbsoluteFilePath(sampleName):
     correctPath = ""
     # Get the filename
-    filename = dataSets[sampleName]
+    try:
+        filename = dataSets[sampleName]
+    except KeyError:
+        print("Sample ", sampleName, " not defined. Exiting.")
+        sys.exit(1)
     # search through several directories to find where the input file is located
     for path in dirs:
         if filename in os.listdir(path):
@@ -143,7 +147,9 @@ def runAnalysis(treeName,sampleName,verbosity):
 if __name__ == "__main__":
     # Parse the script arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("--samples", help="Type of samples to run over.",type=str,choices=["MC","Data","All"],default="All")
+    executionMode = parser.add_mutually_exclusive_group()
+    executionMode.add_argument("--samples", help="Type of samples to run over.",type=str,choices=["MC","Data","All"],default="All")
+    executionMode.add_argument("--singleSample", help="Run over a single sample.",type=str,default="")
     parser.add_argument("--verbose", help="Verbosity level.",type=str,default="INFO",choices=["INFO","DEBUG"])
     parser.add_argument("--treeName", help="Name of the tree to run over.",type=str,default="NOMINAL")
     parser.add_argument("--j", help="Number of cores to use.",type=int,default=1)
@@ -155,24 +161,28 @@ if __name__ == "__main__":
 
     # Define debug mode
     verbosity = args.verbose
-    
-    # Select the correct datasets
-    allData = []
-    allMC = []
-    getSamplesToRun(args.samples,allData,allMC)
-    dataTuple = product([args.treeName],allData,[verbosity])
-    mcTuple = product([args.treeName],allMC,[verbosity])
 
-    # Define number of cores
-    nCPU = args.j if verbosity=="INFO" else 1
+    # If a single sample is chosen, run just over that
+    if args.singleSample != "":
+        runAnalysis(args.treeName,args.singleSample,verbosity)
+    else :
+        # Select the correct datasets
+        allData = []
+        allMC = []
+        getSamplesToRun(args.samples,allData,allMC)
+        dataTuple = product([args.treeName],allData,[verbosity])
+        mcTuple = product([args.treeName],allMC,[verbosity])
 
-    print(TITLE("Running over "+str(len(allData))+" DATA samples\n"))
-    with multiprocessing.Pool(processes=nCPU) as pool:
-        pool.starmap(runAnalysis, dataTuple)
+        # Define number of cores
+        nCPU = args.j if verbosity=="INFO" else 1
 
-    print(TITLE("Running over "+str(len(allMC))+" MC samples\n"))
-    with multiprocessing.Pool(processes=nCPU) as pool:
-        pool.starmap(runAnalysis, mcTuple)
+        print(TITLE("Running over "+str(len(allData))+" DATA samples\n"))
+        with multiprocessing.Pool(processes=nCPU) as pool:
+            pool.starmap(runAnalysis, dataTuple)
+
+        print(TITLE("Running over "+str(len(allMC))+" MC samples\n"))
+        with multiprocessing.Pool(processes=nCPU) as pool:
+            pool.starmap(runAnalysis, mcTuple)
 
     # Say goodbye and print the time taken
     print(HEADER("Analysis done"))
