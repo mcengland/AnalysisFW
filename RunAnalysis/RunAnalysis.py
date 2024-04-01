@@ -109,9 +109,18 @@ def getSamplesToRun(option,allData,allMC):
                 if "truth" not in key and "sys" not in key and "old" not in key and "VV_EW_Semi" not in key:
                     allMC+=value
         return
+    
+def createOutputDirectory(outputPath,treeName,verbosity):
+    if not os.path.exists(outputPath):
+        if verbosity=="DEBUG":
+            print(DEBUG("Creating output directory at: "), os.path.abspath(outputPath))
+        os.makedirs(outputPath)
+        if verbosity=="DEBUG":
+            print(DEBUG("Creating output for tree at: "), os.path.abspath(outputPath)+"/"+treeName)
+        os.makedirs(outputPath+"/"+treeName)
 
 
-def runAnalysis(treeName,sampleName,verbosity):
+def runAnalysis(treeName,sampleName,verbosity,outputPath):
     # Get the absolute path of the file
     filePath = getAbsoluteFilePath(sampleName)
     if verbosity=="DEBUG":
@@ -140,7 +149,10 @@ def runAnalysis(treeName,sampleName,verbosity):
     analysis.Loop(weight, sampleID, sampleName)
     del analysis
     file.Close()
-    os.system("mv "+sampleName+".root "+"../Results/"+treeName+"/"+sampleName+treeName+".root")
+    success = os.system("mv "+sampleName+".root "+outputPath+"/"+treeName+"/"+sampleName+treeName+".root")
+    if success != 0:
+        print("Error moving file to Results directory.")
+        sys.exit(1)
 
 
 
@@ -152,6 +164,7 @@ if __name__ == "__main__":
     executionMode.add_argument("--singleSample", help="Run over a single sample.",type=str,default="")
     parser.add_argument("--verbose", help="Verbosity level.",type=str,default="INFO",choices=["INFO","DEBUG"])
     parser.add_argument("--treeName", help="Name of the tree to run over.",type=str,default="NOMINAL")
+    parser.add_argument("--outputDir", help="Path of to the directory used to store the processed samples.",type=str,default="../Results")
     parser.add_argument("--j", help="Number of cores to use.",type=int,default=1)
     args = parser.parse_args()
 
@@ -162,16 +175,19 @@ if __name__ == "__main__":
     # Define debug mode
     verbosity = args.verbose
 
+    # Create the output directory
+    createOutputDirectory(args.outputDir,args.treeName,verbosity)
+
     # If a single sample is chosen, run just over that
     if args.singleSample != "":
-        runAnalysis(args.treeName,args.singleSample,verbosity)
+        runAnalysis(args.treeName,args.singleSample,verbosity,args.outputDir)
     else :
         # Select the correct datasets
         allData = []
         allMC = []
         getSamplesToRun(args.samples,allData,allMC)
-        dataTuple = product([args.treeName],allData,[verbosity])
-        mcTuple = product([args.treeName],allMC,[verbosity])
+        dataTuple = product([args.treeName],allData,[verbosity],[args.outputDir])
+        mcTuple = product([args.treeName],allMC,[verbosity],[args.outputDir])
 
         # Define number of cores
         nCPU = args.j if verbosity=="INFO" else 1
