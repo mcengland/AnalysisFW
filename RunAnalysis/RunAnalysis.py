@@ -19,6 +19,8 @@ def TITLE(text):
     return bcolors.OKBLUE+text+bcolors.ENDC
 def HEADER(text):
     return bcolors.HEADER+bcolors.BOLD+bcolors.OKBLUE+bcolors.UNDERLINE+text+bcolors.ENDC
+def ERROR(text):
+    return bcolors.FAIL+text+bcolors.ENDC
 
 
 # Load the databases
@@ -140,6 +142,21 @@ def createConfigObject(jobTypeArgument,verbosity):
         print(DEBUG("MVA weights path: "), mvaWeightsPath)
     return CLoopConfig(makeHistograms,makeNTuples,makeReweighting,mvaWeightsPath)
 
+def createArgumentParser():
+    # Parse the script arguments
+    parser = argparse.ArgumentParser()
+    executionMode = parser.add_mutually_exclusive_group()
+    executionMode.add_argument("--samples", help="Group of samples to run over.",type=str,choices=["MC","Data","All"],default="All")
+    executionMode.add_argument("--singleSample", help="Run over a single sample.",type=str,default="")
+    parser.add_argument("--verbose", help="Verbosity level.",type=str,default="INFO",choices=["INFO","DEBUG"])
+    parser.add_argument("--treeName", help="Name of the tree to run over.",type=str,default="NOMINAL")
+    parser.add_argument("--jobType", help="Type of job to run.",type=str,default="h",choices=["h","n","hn","hr","hnr"])
+    parser.add_argument("--outputDir", help="Path of to the directory used to store the processed samples.",type=str,default="../Results")
+    parser.add_argument("--j", help="Number of cores to use.",type=int,default=1)
+    return parser
+
+def getArgumentTupleForSampleGroup(treeName,sampleGroup,verbosity,outputPath,analysisConfig):
+    return product([treeName],sampleGroup,[verbosity],[outputPath],[analysisConfig])
 
 def runAnalysis(treeName,sampleName,verbosity,outputPath,analysisConfig):
     # Get the absolute path of the file
@@ -172,21 +189,12 @@ def runAnalysis(treeName,sampleName,verbosity,outputPath,analysisConfig):
     file.Close()
     success = os.system("mv "+sampleName+".root "+outputPath+"/"+treeName+"/"+sampleName+treeName+".root")
     if success != 0:
-        print("Error moving file to Results directory.")
+        print(ERROR("Error moving file to Results directory."))
         sys.exit(1)
-
 
 if __name__ == "__main__":
     # Parse the script arguments
-    parser = argparse.ArgumentParser()
-    executionMode = parser.add_mutually_exclusive_group()
-    executionMode.add_argument("--samples", help="Type of samples to run over.",type=str,choices=["MC","Data","All"],default="All")
-    executionMode.add_argument("--singleSample", help="Run over a single sample.",type=str,default="")
-    parser.add_argument("--verbose", help="Verbosity level.",type=str,default="INFO",choices=["INFO","DEBUG"])
-    parser.add_argument("--treeName", help="Name of the tree to run over.",type=str,default="NOMINAL")
-    parser.add_argument("--jobType", help="Type of job to run.",type=str,default="h",choices=["h","n","hn","hr","hnr"])
-    parser.add_argument("--outputDir", help="Path of to the directory used to store the processed samples.",type=str,default="../Results")
-    parser.add_argument("--j", help="Number of cores to use.",type=int,default=1)
+    parser = createArgumentParser()
     args = parser.parse_args()
 
     # Start timer and greet the user
@@ -210,8 +218,8 @@ if __name__ == "__main__":
         allData = []
         allMC = []
         getSamplesToRun(args.samples,allData,allMC)
-        dataTuple = product([args.treeName],allData,[verbosity],[args.outputDir], [config])
-        mcTuple = product([args.treeName],allMC,[verbosity],[args.outputDir], [config])
+        dataTuple = getArgumentTupleForSampleGroup(args.treeName,allData,verbosity,args.outputDir, config)
+        mcTuple = getArgumentTupleForSampleGroup(args.treeName,allMC,verbosity,args.outputDir, config)
 
         # Define number of cores
         nCPU = args.j if verbosity=="INFO" else 1
