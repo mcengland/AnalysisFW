@@ -123,6 +123,7 @@ def createOutputDirectory(outputPath,treeName,verbosity):
         if verbosity=="DEBUG":
             print(DEBUG("Creating output directory at: "), os.path.abspath(outputPath))
         os.makedirs(outputPath)
+    if not os.path.exists(outputPath+"/"+treeName):
         if verbosity=="DEBUG":
             print(DEBUG("Creating output for tree at: "), os.path.abspath(outputPath)+"/"+treeName)
         os.makedirs(outputPath+"/"+treeName)
@@ -148,7 +149,8 @@ def createArgumentParser():
     executionMode = parser.add_mutually_exclusive_group()
     executionMode.add_argument("--samples", help="Group of samples to run over.",type=str,choices=["MC","Data","All"],default="All")
     executionMode.add_argument("--singleSample", help="Run over a single sample.",type=str,default="")
-    parser.add_argument("--verbose", help="Verbosity level.",type=str,default="INFO",choices=["INFO","DEBUG"])
+    executionMode.add_argument("--inputFile", help="Input txt file with a list of samples to run over.",type=str,default="")
+    parser.add_argument("--verbosity", help="Verbosity level.",type=str,default="INFO",choices=["INFO","DEBUG"])
     parser.add_argument("--treeName", help="Name of the tree to run over.",type=str,default="NOMINAL")
     parser.add_argument("--jobType", help="Type of job to run.",type=str,default="h",choices=["h","n","hn","hr","hnr"])
     parser.add_argument("--outputDir", help="Path of to the directory used to store the processed samples.",type=str,default="../Results")
@@ -202,7 +204,12 @@ if __name__ == "__main__":
     print(HEADER("Welcome to the AnalysisFW"))
 
     # Define debug mode
-    verbosity = args.verbose
+    verbosity = args.verbosity
+
+    # Define number of cores
+    nCPU = args.j if verbosity=="INFO" else 1
+    if verbosity=="DEBUG" and args.j>1:
+        print(DEBUG("Only one core will be used when in DEBUG mode."))
 
     # Create the output directory
     createOutputDirectory(args.outputDir,args.treeName,verbosity)
@@ -213,6 +220,19 @@ if __name__ == "__main__":
     # If a single sample is chosen, run just over that
     if args.singleSample != "":
         runAnalysis(args.treeName,args.singleSample,verbosity,args.outputDir,config)
+    
+    # If an input file is given, run over the samples in the file
+    if args.inputFile != "":
+        print(TITLE("Running over samples in input file: "+args.inputFile))
+        listOfSamples = []
+        with open(args.inputFile) as f:
+            for line in f:
+                listOfSamples.append(line.strip())
+        samplesTuple = getArgumentTupleForSampleGroup(args.treeName,listOfSamples,verbosity,args.outputDir, config)
+        print(TITLE("Running over "+str(len(listOfSamples))+" samples\n"))
+        with multiprocessing.Pool(processes=nCPU) as pool:
+            pool.starmap(runAnalysis, samplesTuple)
+    # If a group of samples is chosen, run over all of them
     else :
         # Select the correct datasets
         allData = []
@@ -221,13 +241,10 @@ if __name__ == "__main__":
         dataTuple = getArgumentTupleForSampleGroup(args.treeName,allData,verbosity,args.outputDir, config)
         mcTuple = getArgumentTupleForSampleGroup(args.treeName,allMC,verbosity,args.outputDir, config)
 
-        # Define number of cores
-        nCPU = args.j if verbosity=="INFO" else 1
-
         print(TITLE("Running over "+str(len(allData))+" DATA samples\n"))
         with multiprocessing.Pool(processes=nCPU) as pool:
             pool.starmap(runAnalysis, dataTuple)
-
+            
         print(TITLE("Running over "+str(len(allMC))+" MC samples\n"))
         with multiprocessing.Pool(processes=nCPU) as pool:
             pool.starmap(runAnalysis, mcTuple)
