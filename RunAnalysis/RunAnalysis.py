@@ -193,6 +193,8 @@ def runAnalysis(treeName,sampleName,verbosity,outputPath,analysisConfig):
     if success != 0:
         print(ERROR("Error moving file to Results directory."))
         sys.exit(1)
+    if verbosity=="DEBUG":
+        print(DEBUG("==========================================================================================================================================="))
 
 if __name__ == "__main__":
     # Parse the script arguments

@@ -3,7 +3,8 @@
 # Z->tautau
 v26Paths = {
 "dbaronmo": ['/eos/user/w/wyatt/data/v26-sys-vbf/'], # Remote
-"b78499db": ['/Users/user/Documents/HEP/v26/','/Users/user/Documents/HEP/v26-truth/']
+"b78499db": ['/Users/user/Documents/HEP/AnalysisFW/data/','/Users/user/Documents/HEP/v26/','/Users/user/Documents/HEP/v26-truth/']
+
 }
 
 if __name__ == "__main__":
