@@ -8,10 +8,23 @@ const std::vector<std::string>& cutLabels, const std::string& cutBit) :
 m_baseName{baseName}, m_nBins{nBins}, m_xMin{xMin}, m_xMax{xMax}, m_description{description}, m_cutLabels{cutLabels}, m_cutBit{cutBit}
 {
     bool relevantCut = !m_cutBit.empty(); // See if this distributtion is a cut.
+    // If it is a relevant cut, make sure the cutBit matches any of the cutLabels
+    if (relevantCut){
+        bool matchFound = false;
+        for (const auto& cutTag : m_cutLabels){
+            if (cutTag==m_cutBit) {matchFound=true; break;}
+        }
+        if(!matchFound) {
+            std::cout <<  OutputTags::ERROR_MESSAGE << "None of the cutNames declared in DeclareHistograms.h matches the tag for this histogram = " << m_cutBit << std::endl;
+            std::cout << "Bad histogram: " << m_baseName << std::endl;
+            exit(1);
+        }
+    }
+    
+    // Loop over the number of histograms and create them.
     m_numberHistos = relevantCut ? cutLabels.size()+1 : cutLabels.size();
     m_histos.resize(m_numberHistos);
     std::string name{m_baseName};
-    // Loop over the number of histograms and create them.
     for (int i{0}; i < m_numberHistos; i++)
     {
         if (relevantCut) // The first histogram is the one that contains events passed or not with all other cuts applied.
@@ -23,7 +36,6 @@ m_baseName{baseName}, m_nBins{nBins}, m_xMin{xMin}, m_xMax{xMax}, m_description{
             name = name +"_" + cutLabels[i];
             m_histos[i] = TH1F(name.c_str(),m_description.c_str(),m_nBins,m_xMin,m_xMax);
         }
-        
     }
 }
 

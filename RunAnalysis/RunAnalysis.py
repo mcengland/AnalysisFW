@@ -222,7 +222,7 @@ if __name__ == "__main__":
         runAnalysis(args.treeName,args.singleSample,verbosity,args.outputDir,config)
     
     # If an input file is given, run over the samples in the file
-    if args.inputFile != "":
+    elif args.inputFile != "":
         print(TITLE("Running over samples in input file: "+args.inputFile))
         listOfSamples = []
         with open(args.inputFile) as f:
@@ -233,7 +233,7 @@ if __name__ == "__main__":
         with multiprocessing.Pool(processes=nCPU) as pool:
             pool.starmap(runAnalysis, samplesTuple)
     # If a group of samples is chosen, run over all of them
-    else :
+    elif args.samples != "":
         # Select the correct datasets
         allData = []
         allMC = []
