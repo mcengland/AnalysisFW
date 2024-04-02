@@ -382,9 +382,6 @@
    TLorentzVector  *truth_Z_p4;
    Double_t        weight_mc;
    std::vector<float>   *weight_mc_v;
-   TLorentzVector  *taulep_0_truth_invis_p4;   //!
-   TLorentzVector  *taulep_0_truth_vis_p4;   //!
-   TLorentzVector  *tau_0_truth_total_p4;   //!
 
 
    // List of branches
@@ -769,6 +766,3 @@
    TBranch        *b_truth_Z_p4;   //!
    TBranch        *b_weight_mc;   //!
    TBranch        *b_weight_mc_v;   //!
-   TBranch        *b_taulep_0_truth_invis_p4;   //!
-   TBranch        *b_taulep_0_truth_vis_p4;   //!
-   TBranch        *b_tau_0_truth_total_p4;   //!

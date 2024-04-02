@@ -33,7 +33,7 @@ void histogramContainer::Fill(double value, double weight, const std::vector<int
     //First check that the size of the passed cutBits is consistent with the number of cutLabels.
     if (cutBits.size() != m_cutLabels.size())
     {
-        std::cout <<  OutputTags::ERROR_MESSAGE << "The size of the cuts vector passed is not consistent with the definition in Analysis.h" << std::endl;
+        std::cout <<  OutputTags::ERROR_MESSAGE << "The size of the cuts vector passed is not consistent with the definition in DeclareHistograms.h" << std::endl;
         std::cout << "Bad histogram: " << m_baseName << std::endl;
         exit(1);
     }

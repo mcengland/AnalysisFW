@@ -4,7 +4,6 @@
 #include "CLoop.h"
 #include "CLoopConfig.h"
 
-double is_inside_jets(TLorentzVector* jet, TLorentzVector* jet1, TLorentzVector* jet2);
 std::vector<std::string> split(const std::string& s, char delimiter);
 
 void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConfig& config)
@@ -38,26 +37,18 @@ void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConf
         Long64_t ientry = LoadTree(jentry);
         if (ientry < 0) break;
         nb = fChain->GetEntry(jentry,0);    nbytes += nb;
-        // if (Cut(ientry) < 0) continue;
-        // Variables defining regions
+
+        // Variable defining regions
         // DELTA RAPIDITY 2-JETS
         double delta_y = abs(ljet_0_p4->Rapidity()-ljet_1_p4->Rapidity());
-        // NUMBER OF JETS INTERVAL
-        size_t n_ljets=n_jets-n_bjets_MV2c10_FixedCutBEff_85;
-        int n_jets_interval{};
-        if(n_ljets>2){
-          n_jets_interval=n_jets_interval+is_inside_jets(ljet_2_p4,ljet_0_p4,ljet_1_p4);
-        }
         // Z BOSON CENTRALITY
         double lepton_xi=((*tau_0_p4)+(*muon_0_p4)).Rapidity();
         double dijet_xi=ljet_0_p4->Rapidity()+ljet_1_p4->Rapidity();
         double z_centrality=abs(lepton_xi-0.5*dijet_xi)/delta_y;
 
         Region region = Region::DefaultNoRW;
-        if ((z_centrality<0.5 && z_centrality<=1) && n_jets_interval==0){region = Region::SR;}
-        else if ((z_centrality<0.5 && z_centrality<=1) && n_jets_interval==1){region = Region::CRa;}
-        else if ((z_centrality>=0.5 && z_centrality<=1) && n_jets_interval==1){region = Region::CRb;}
-        else if ((z_centrality>=0.5 && z_centrality<=1) && n_jets_interval==0){region = Region::CRc;}
+        if (z_centrality<0.5){region = Region::SR;}
+        else if (z_centrality<=1.0){region = Region::CR;}
 
         double mjj = sqrt(2*(ljet_0_p4->Dot(*ljet_1_p4)));
         double mjj_w = 1.0;
@@ -72,23 +63,14 @@ void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConf
                 mjj_w = mjj_rw(mjj,parametersSHERPA[region]); 
             } else if (mcSample == MC::MadGraph){ 
                 mjj_w = mjj_rw(mjj,parametersMadGraph[region]);
-            } else if (mcSample == MC::SHERPANLO){ 
-                mjj_w = mjj_rw(mjj,parametersSHERPANLO[region]);
-            } else if (mcSample == MC::MadGraphNLO){ 
-                mjj_w = mjj_rw(mjj,parametersMadGraphNLO[region]);
-            } 
+            }
         }
-
-        // ZpT reweighting
-        double z_w=1;
-        double zpt_weight=1/z_w;
-
         double eventWeight = 1;
         // check if event is from real data
         if (!(key.substr(0,4)=="data")) {
             if (!(NOMINAL_pileup_combined_weight > -1)) continue; // TO AVOID FILLING HUGE WEIGHTS IN EWK Sample
             // take product of all scale factors
-            eventWeight = weight_mc*NOMINAL_pileup_combined_weight*lumFactor*zpt_weight*mjj_w
+            eventWeight = weight_mc*NOMINAL_pileup_combined_weight*lumFactor*mjj_w
             *muon_0_NOMINAL_MuEffSF_HLT_mu26_ivarmedium_OR_HLT_mu50_QualMedium*muon_0_NOMINAL_MuEffSF_HLT_mu20_iloose_L1MU15_OR_HLT_mu50_QualMedium
             *muon_0_NOMINAL_MuEffSF_IsoTightTrackOnly_FixedRad*muon_0_NOMINAL_MuEffSF_Reco_QualMedium/*muon_0_NOMINAL_MuEffSF_TTVA*/
             *jet_NOMINAL_central_jets_global_effSF_JVT*jet_NOMINAL_central_jets_global_ineffSF_JVT*jet_NOMINAL_forward_jets_global_effSF_JVT
@@ -123,4 +105,3 @@ void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConf
     double time_spent = (endTime - startTime) / CLOCKS_PER_SEC;
     std::cout << "Time processing == " <<time_spent << std::endl;
 }
-

@@ -56,18 +56,6 @@ double del_phi(double phi_1, double phi_2){
     return delta;
 }
 
-// Function to see if a jet is inside the rapidity gap defined by two jets
-// @param test_jet: jet to test
-// @param j1: leading jet
-// @param j2: subleading jet
-int is_inside_jets(TLorentzVector * test_jet,TLorentzVector * j1, TLorentzVector * j2){
-  double delta_y_j1j2=abs(j1->Rapidity()-j2->Rapidity());
-  double delta_y_j1test=abs(j1->Rapidity()-test_jet->Rapidity());
-  double delta_y_j2test=abs(j2->Rapidity()-test_jet->Rapidity());
-  if(delta_y_j1test>delta_y_j1j2 || delta_y_j2test>delta_y_j1j2){return 0;}
-  else{return 1;}
-}
-
 // Function to calculate the minimum delta R between a test particle and a container of particles
 // @param test_particle: particle to test
 // @param bool_vector_container: container of booleans to select particles
