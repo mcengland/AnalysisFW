@@ -138,7 +138,7 @@ def createConfigObject(jobTypeArgument,verbosity):
     makeReweighting = 'r' in jobTypeArgument
     if verbosity=="DEBUG" and makeReweighting:
         print(DEBUG("Making reweighting!"))
-    mvaWeightsPath = "/Users/user/Documents/HEP/MVA-Analysis/dataset/weights/10Folds_BDT-0.3.weights.xml"
+    mvaWeightsPath = "/Users/user/Documents/HEP/AnalysisFW/data/MVA-Weights/10Folds_BDT-0.3.weights.xml"
     if verbosity=="DEBUG":
         print(DEBUG("MVA weights path: "), mvaWeightsPath)
     return CLoopConfig(makeHistograms,makeNTuples,makeReweighting,mvaWeightsPath)
