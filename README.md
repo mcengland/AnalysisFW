@@ -1,4 +1,4 @@
-# Welcome to the AnalysisFW wiki!
+# Welcome to AnalysisFW!
 
 AnalysisFW allows you to run a particle physics analysis. The input datasets must be stored in a ROOT TTree.
 
