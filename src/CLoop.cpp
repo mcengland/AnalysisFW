@@ -86,7 +86,7 @@ void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConf
 
     }
     // end style and writing
-    //if (saveHistograms) Style(lumFactor);   
+    if (saveHistograms) Style(lumFactor);   
     if (saveEvents) {
         m_outputFile->WriteObject(m_signalTree.GetTree(),"SIGNAL");
         m_outputFile->WriteObject(m_backgroundTree.GetTree(),"BACKGROUND");
