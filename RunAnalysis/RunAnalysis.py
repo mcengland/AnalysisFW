@@ -26,6 +26,7 @@ def ERROR(text):
 # Load the databases
 from infofile import infos
 from dataSets import dataSets, totRealLum, realList, dataCombos, dirs
+from DatasetsPaths import findMainPath
 
 # For parallel processing and timing
 import multiprocessing
@@ -36,7 +37,7 @@ import time
 import argparse
 
 # Load the C++ library
-sys.path.append('../build/python/.')
+sys.path.append(findMainPath()+'/build/python/.')
 from AnalysisFW import CLoop,CLoopConfig
 
 # This is a hack to allow the C++ class to be pickled, see:
@@ -45,6 +46,7 @@ def CLoopConfig_getinitargs(self):
   return (self.m_saveHistograms,self.m_saveEvents,self.m_reweightMjj,self.m_bdtWeightsPath)
 # now inject __getinitargs__ (Python is a dynamic language!)
 CLoopConfig.__getinitargs__ = CLoopConfig_getinitargs
+
 
 def getLuminosity(sampleName):
     if "2018" in sampleName:
@@ -138,7 +140,7 @@ def createConfigObject(jobTypeArgument,verbosity):
     makeReweighting = 'r' in jobTypeArgument
     if verbosity=="DEBUG" and makeReweighting:
         print(DEBUG("Making reweighting!"))
-    mvaWeightsPath = "/Users/user/Documents/HEP/AnalysisFW/data/MVA-Weights/10Folds_BDT-0.3.weights.xml"
+    mvaWeightsPath = findMainPath()+"/data/MVA-Weights/10Folds_BDT-0.3.weights.xml"
     if verbosity=="DEBUG":
         print(DEBUG("MVA weights path: "), mvaWeightsPath)
     return CLoopConfig(makeHistograms,makeNTuples,makeReweighting,mvaWeightsPath)
@@ -153,7 +155,7 @@ def createArgumentParser():
     parser.add_argument("--verbosity", help="Verbosity level.",type=str,default="INFO",choices=["INFO","DEBUG"])
     parser.add_argument("--treeName", help="Name of the tree to run over.",type=str,default="NOMINAL")
     parser.add_argument("--jobType", help="Type of job to run.",type=str,default="h",choices=["h","n","hn","hr","hnr"])
-    parser.add_argument("--outputDir", help="Path of to the directory used to store the processed samples.",type=str,default="../Results")
+    parser.add_argument("--outputDir", help="Path of to the directory used to store the processed samples.",type=str,default=findMainPath()+"/Results")
     parser.add_argument("--j", help="Number of cores to use.",type=int,default=1)
     return parser
 
