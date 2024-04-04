@@ -19,7 +19,7 @@ try:
   dirs = []
   for path in pathsToSamplesList:
     samples += os.listdir(path)
-    dirs += [path+i+'/' for i in os.listdir(path) if ('mc' in i or 'data' in i)]
+    dirs += [path+i+'/' for i in os.listdir(path) if ('mc' in i or 'data' in i or 'VBF' in i)]
 except FileNotFoundError:
   samples=[]
   print("Invalid directory of samples..." )
@@ -36,6 +36,8 @@ dataCombos_Data = {
 
 # List of combos for MC
 dataCombos_MC = {
+#test
+"test":['test_0',],
 #Ztautau_2017
 "Ztautau_2017":['Ztautau_2017_0','Ztautau_2017_1',],
 #Ztautau_2018
@@ -1646,6 +1648,8 @@ dataSets_Data = {
 'data_2015_292':'user.dbaronmo.25819227._000022.LepUniv_ttbar.root',
 }
 dataSets_MC = {
+#test
+'test_0':'DiTauExample.root',
 #Ztautau_2017
 'Ztautau_2017_0':'user.dbaronmo.25819074._000001.LepUniv_ttbar.root',
 'Ztautau_2017_1':'user.dbaronmo.25819074._000002.LepUniv_ttbar.root',

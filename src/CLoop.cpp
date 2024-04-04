@@ -3,6 +3,8 @@
 #include "ReweightingTools.h"
 #include "CLoop.h"
 #include "CLoopConfig.h"
+#include <TLorentzVector.h>
+#include <memory>
 
 std::vector<std::string> split(const std::string& s, char delimiter);
 
@@ -38,11 +40,24 @@ void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConf
         if (ientry < 0) break;
         nb = fChain->GetEntry(jentry,0);    nbytes += nb;
 
+        // First, check that we have at least two jets and two taus
+        if(TauPt->size() < 2 || JetPt->size() < 2) continue;
+        // Jet vectors
+        std::unique_ptr<TLorentzVector> ljet_0_p4 = std::make_unique<TLorentzVector>();
+        std::unique_ptr<TLorentzVector> ljet_1_p4 = std::make_unique<TLorentzVector>();
+        ljet_1_p4->SetPtEtaPhiE(JetPt->at(1)/1000,JetEta->at(1),JetPhi->at(1),JetE->at(1)/1000);
+        ljet_0_p4->SetPtEtaPhiE(JetPt->at(0)/1000,JetEta->at(0),JetPhi->at(0),JetE->at(0)/1000);
+        // Tau vectors
+        std::unique_ptr<TLorentzVector> tau_0_p4 = std::make_unique<TLorentzVector>();
+        std::unique_ptr<TLorentzVector> tau_1_p4 = std::make_unique<TLorentzVector>();
+        tau_0_p4->SetPtEtaPhiE(TauPt->at(0)/1000,TauEta->at(0),TauPhi->at(0),TauE->at(0)/1000);
+        tau_1_p4->SetPtEtaPhiE(TauPt->at(1)/1000,TauEta->at(1),TauPhi->at(1),TauE->at(1)/1000);
+
         // Variable defining regions
         // DELTA RAPIDITY 2-JETS
         double delta_y = abs(ljet_0_p4->Rapidity()-ljet_1_p4->Rapidity());
         // Z BOSON CENTRALITY
-        double lepton_xi=((*tau_0_p4)+(*muon_0_p4)).Rapidity();
+        double lepton_xi=((*tau_0_p4)+(*tau_1_p4)).Rapidity();
         double dijet_xi=ljet_0_p4->Rapidity()+ljet_1_p4->Rapidity();
         double z_centrality=abs(lepton_xi-0.5*dijet_xi)/delta_y;
 
@@ -68,14 +83,9 @@ void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConf
         double eventWeight = 1;
         // check if event is from real data
         if (!(key.substr(0,4)=="data")) {
-            if (!(NOMINAL_pileup_combined_weight > -1)) continue; // TO AVOID FILLING HUGE WEIGHTS IN EWK Sample
             // take product of all scale factors
-            eventWeight = weight_mc*NOMINAL_pileup_combined_weight*lumFactor*mjj_w
-            *muon_0_NOMINAL_MuEffSF_HLT_mu26_ivarmedium_OR_HLT_mu50_QualMedium*muon_0_NOMINAL_MuEffSF_HLT_mu20_iloose_L1MU15_OR_HLT_mu50_QualMedium
-            *muon_0_NOMINAL_MuEffSF_IsoTightTrackOnly_FixedRad*muon_0_NOMINAL_MuEffSF_Reco_QualMedium/*muon_0_NOMINAL_MuEffSF_TTVA*/
-            *jet_NOMINAL_central_jets_global_effSF_JVT*jet_NOMINAL_central_jets_global_ineffSF_JVT*jet_NOMINAL_forward_jets_global_effSF_JVT
-            *jet_NOMINAL_forward_jets_global_ineffSF_JVT*jet_NOMINAL_global_effSF_MV2c10_FixedCutBEff_85*jet_NOMINAL_global_ineffSF_MV2c10_FixedCutBEff_85
-            *tau_0_NOMINAL_TauEffSF_reco*tau_0_NOMINAL_TauEffSF_JetRNNmedium;
+            eventWeight = weight*lumFactor*mjj_w;
+    
         }
 
         // fill histograms

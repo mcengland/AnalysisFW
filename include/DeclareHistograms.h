@@ -12,7 +12,6 @@ TH1F* tauEta = new TH1F("tauEta","Tau Eta",60,-3,3);
 histogramContainer lep_ptContainer{"lep_pt","Lep pT",500,0,500,cutNames,"ptl"};
 histogramContainer tau_ptContainer{"tau_pt","Tau pT",500,0,500,cutNames,"tpt"};
 histogramContainer n_bjetsContainer{"n_bjets","Number of b_jets",5,0,5,notFull};
-histogramContainer lepisoContainer{"lepiso","Lep Isolation",2,0,2,notFull};
 histogramContainer delta_phiContainer{"delta_phi","Delta phi between tau and lep",32,0,3.2,cutNames,"dphi"};
 histogramContainer mass_jjContainer{"mass_jj","Invariant mass di_jet system",5000,0,5000,cutNames,"mjj"};
 histogramContainer ljet0_ptContainer{"ljet0_pt","Light jet0 pT",1000,0,1000,cutNames,"j1pt"};

@@ -10,7 +10,7 @@ def findMainPath():
 
 # Z->tautau datasets
 v26Paths = {
-"b78499db": ['/Users/user/Documents/HEP/v26/','/Users/user/Documents/HEP/v26-truth/']
+"b78499db": ['/Users/user/Documents/HEP/v26/','/Users/user/Documents/HEP/v26-truth/','/Users/user/Downloads/TestSample/']
 }
 
 # Set up the example path for the analysis depending on the user machine name.

@@ -3,6 +3,7 @@
 #include <TLorentzVector.h>
 #include <sstream>
 #include <string>
+#include <memory>
 
 // Function to split a string by a delimiter and return a vector of strings.
 // Like Python's split function.
@@ -60,17 +61,11 @@ double del_phi(double phi_1, double phi_2){
 // @param test_particle: particle to test
 // @param bool_vector_container: container of booleans to select particles
 // @param jet_container: container of particles to test against
-double min_deltaR(TLorentzVector* test_particle, std::vector<UInt_t>& bool_vector_container,const std::vector<TLorentzVector*>& jet_container){
+double min_deltaR(std::unique_ptr<TLorentzVector> const &test_particle, std::unique_ptr<TLorentzVector> const &jet1, std::unique_ptr<TLorentzVector> const &jet2){
 
-  std::vector<double> delta_Rs{};
+    double delta_R1=test_particle->DeltaR(*jet1);
+    double delta_R2=test_particle->DeltaR(*jet2);
 
-  for (size_t index{0};index<jet_container.size();index++){
-    if (bool_vector_container[index]!=0){
-      delta_Rs.push_back(jet_container[index]->DeltaR(*test_particle));
-    }
-    else {break;}
-  }
-
-  double min_dR=*std::min_element(delta_Rs.begin(),delta_Rs.end());
-  return min_dR;
+    double min_dR=std::min(delta_R1,delta_R2);
+    return min_dR;
 }
