@@ -19,7 +19,7 @@ try:
   dirs = []
   for path in pathsToSamplesList:
     samples += os.listdir(path)
-    dirs += [path+i+'/' for i in os.listdir(path) if ('mc' in i or 'data' in i or 'VBF' in i)]
+    dirs += [path+i+'/' for i in os.listdir(path) if ('mc' in i or 'data' in i or 'MC' in i)]
 except FileNotFoundError:
   samples=[]
   print("Invalid directory of samples..." )

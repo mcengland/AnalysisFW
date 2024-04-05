@@ -7,6 +7,7 @@
 #include <memory>
 
 std::vector<std::string> split(const std::string& s, char delimiter);
+TLorentzVector& toGeV(TLorentzVector &v);
 
 void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConfig& config)
 {
@@ -43,29 +44,33 @@ void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConf
         // First, check that we have at least two jets and two taus
         if(TauPt->size() < 2 || JetPt->size() < 2) continue;
         // Jet vectors
-        std::unique_ptr<TLorentzVector> ljet_0_p4 = std::make_unique<TLorentzVector>();
-        std::unique_ptr<TLorentzVector> ljet_1_p4 = std::make_unique<TLorentzVector>();
-        ljet_1_p4->SetPtEtaPhiE(JetPt->at(1)/1000,JetEta->at(1),JetPhi->at(1),JetE->at(1)/1000);
-        ljet_0_p4->SetPtEtaPhiE(JetPt->at(0)/1000,JetEta->at(0),JetPhi->at(0),JetE->at(0)/1000);
+        TLorentzVector ljet_0_p4;
+        TLorentzVector ljet_1_p4;
+        ljet_1_p4.SetPtEtaPhiE(JetPt->at(1),JetEta->at(1),JetPhi->at(1),JetE->at(1));
+        ljet_0_p4.SetPtEtaPhiE(JetPt->at(0),JetEta->at(0),JetPhi->at(0),JetE->at(0));
+        ljet_0_p4 = toGeV(ljet_0_p4);
+        ljet_1_p4 = toGeV(ljet_1_p4);
         // Tau vectors
-        std::unique_ptr<TLorentzVector> tau_0_p4 = std::make_unique<TLorentzVector>();
-        std::unique_ptr<TLorentzVector> tau_1_p4 = std::make_unique<TLorentzVector>();
-        tau_0_p4->SetPtEtaPhiE(TauPt->at(0)/1000,TauEta->at(0),TauPhi->at(0),TauE->at(0)/1000);
-        tau_1_p4->SetPtEtaPhiE(TauPt->at(1)/1000,TauEta->at(1),TauPhi->at(1),TauE->at(1)/1000);
+        TLorentzVector tau_0_p4;
+        TLorentzVector tau_1_p4;
+        tau_0_p4.SetPtEtaPhiE(TauPt->at(0),TauEta->at(0),TauPhi->at(0),TauE->at(0));
+        tau_1_p4.SetPtEtaPhiE(TauPt->at(1),TauEta->at(1),TauPhi->at(1),TauE->at(1));
+        tau_0_p4 = toGeV(tau_0_p4);
+        tau_1_p4 = toGeV(tau_1_p4);
 
         // Variable defining regions
         // DELTA RAPIDITY 2-JETS
-        double delta_y = abs(ljet_0_p4->Rapidity()-ljet_1_p4->Rapidity());
+        double delta_y = abs(ljet_0_p4.Rapidity()-ljet_1_p4.Rapidity());
         // Z BOSON CENTRALITY
-        double lepton_xi=((*tau_0_p4)+(*tau_1_p4)).Rapidity();
-        double dijet_xi=ljet_0_p4->Rapidity()+ljet_1_p4->Rapidity();
+        double lepton_xi=(tau_0_p4+tau_1_p4).Rapidity();
+        double dijet_xi=ljet_0_p4.Rapidity()+ljet_1_p4.Rapidity();
         double z_centrality=abs(lepton_xi-0.5*dijet_xi)/delta_y;
 
         Region region = Region::DefaultNoRW;
         if (z_centrality<0.5){region = Region::SR;}
         else if (z_centrality<=1.0){region = Region::CR;}
 
-        double mjj = sqrt(2*(ljet_0_p4->Dot(*ljet_1_p4)));
+        double mjj = sqrt(2*(ljet_0_p4.Dot(ljet_1_p4)));
         double mjj_w = 1.0;
 
         // mjj reweighting

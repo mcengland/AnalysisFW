@@ -61,11 +61,16 @@ double del_phi(double phi_1, double phi_2){
 // @param test_particle: particle to test
 // @param bool_vector_container: container of booleans to select particles
 // @param jet_container: container of particles to test against
-double min_deltaR(std::unique_ptr<TLorentzVector> const &test_particle, std::unique_ptr<TLorentzVector> const &jet1, std::unique_ptr<TLorentzVector> const &jet2){
+double min_deltaR(const TLorentzVector& test_particle, const TLorentzVector& jet1, const TLorentzVector& jet2){
 
-    double delta_R1=test_particle->DeltaR(*jet1);
-    double delta_R2=test_particle->DeltaR(*jet2);
+    double delta_R1=test_particle.DeltaR(jet1);
+    double delta_R2=test_particle.DeltaR(jet2);
 
     double min_dR=std::min(delta_R1,delta_R2);
     return min_dR;
+}
+
+TLorentzVector& toGeV(TLorentzVector &v) {
+    v.SetPtEtaPhiE(v.Pt()/1000., v.Eta(), v.Phi(), v.E()/1000.);
+    return v;
 }
