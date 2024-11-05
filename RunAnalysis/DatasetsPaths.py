@@ -10,7 +10,7 @@ def findMainPath():
 
 # Z->tautau datasets
 v26Paths = {
-"b78499db": ['/Users/user/Documents/HEP/v26/','/Users/user/Documents/HEP/v26-truth/','/Users/user/Documents/HEP/DiTauNtuples/']
+"f25503me": ['/Users/user/Documents/AnalysisFW/data']
 }
 
 # Set up the example path for the analysis depending on the user machine name.
@@ -19,6 +19,7 @@ username = os.environ['USER']
 if username in v26Paths:
     paths = v26Paths[username]
     paths = [findMainPath()+'/data/'] + paths
+    #print(paths)
     v26Paths[username] = paths
 else:
     v26Paths[username] = [findMainPath()+'/data/']

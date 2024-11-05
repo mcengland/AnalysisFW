@@ -74,3 +74,105 @@ TLorentzVector& toGeV(TLorentzVector &v) {
     v.SetPtEtaPhiE(v.Pt()/1000., v.Eta(), v.Phi(), v.E()/1000.);
     return v;
 }
+
+float metProjectionClosestTau(const TLorentzVector& met, const TLorentzVector& tau0, const TLorentzVector& tau1){
+    // Calculate the delta phi between the MET and the taus
+    double deltaPhiTau0 = del_phi(tau0.Phi(), met.Phi());
+    double deltaPhiTau1 = del_phi(tau1.Phi(), met.Phi());
+    //Check which one is the closest
+    bool tau0IsClosest = deltaPhiTau0 < deltaPhiTau1;
+    //Calculate the projection
+    float projection = tau0IsClosest ? met.Pt() * cos(deltaPhiTau0) : met.Pt() * (deltaPhiTau1);
+    return projection;
+}
+
+double CalculateOmega(const TLorentzVector& tau_0_p4, const TLorentzVector& tau_1_p4, const TLorentzVector& met_p4){
+    double delta_phi_tau_tau = del_phi(tau_0_p4.Phi(), tau_1_p4.Phi());
+    double delta_phi_tau0_met = del_phi(tau_0_p4.Phi(), met_p4.Phi());
+    double delta_phi_tau1_met = del_phi(tau_1_p4.Phi(), met_p4.Phi());
+
+    if (delta_phi_tau0_met < delta_phi_tau1_met) {
+        double omega = delta_phi_tau0_met / delta_phi_tau_tau;
+        if (delta_phi_tau0_met + delta_phi_tau1_met > delta_phi_tau_tau) {return omega * -1;}
+        else {return omega;}
+    } else {
+        double omega = delta_phi_tau1_met / delta_phi_tau_tau;
+        if (delta_phi_tau0_met + delta_phi_tau1_met > delta_phi_tau_tau) {return omega + 1;}
+        else {return 1 - omega;}
+    }
+}
+
+std::pair<TLorentzVector, TLorentzVector> GetNeutrinoVectors(const TLorentzVector& tau_0_p4, const TLorentzVector& tau_1_p4, const TLorentzVector& met_p4){
+    TLorentzVector neutrino_0_p4;
+    TLorentzVector neutrino_1_p4;
+
+    double omega = CalculateOmega(tau_0_p4, tau_1_p4, met_p4);
+    double delta_phi_0 = del_phi(tau_0_p4.Phi(), met_p4.Phi());
+    double delta_phi_1 = del_phi(tau_1_p4.Phi(), met_p4.Phi());
+
+    if (omega > 0 && omega < 1) {
+        double neutrino_0_pt = met_p4.Pt() * sin(delta_phi_1)/sin(delta_phi_0 + delta_phi_1);
+        double neutrino_1_pt = met_p4.Pt() * sin(delta_phi_0)/sin(delta_phi_0 + delta_phi_1);
+        neutrino_0_p4.SetPtEtaPhiM(neutrino_0_pt, tau_0_p4.Eta(), tau_0_p4.Phi(), 0);
+        neutrino_1_p4.SetPtEtaPhiM(neutrino_1_pt, tau_1_p4.Eta(), tau_1_p4.Phi(), 0);
+    } else if (omega <= 0 && cos(delta_phi_0) > 0) {
+        double neutrino_0_pt = met_p4.Pt() * cos(delta_phi_0);
+        neutrino_0_p4.SetPtEtaPhiM(neutrino_0_pt, tau_0_p4.Eta(), tau_0_p4.Phi(), 0);
+        neutrino_1_p4.SetPtEtaPhiM(0, 0, 0, 0);
+    } else if (omega >= 1 && cos(delta_phi_1) > 0){
+        double neutrino_1_pt = met_p4.Pt() * cos(delta_phi_1);
+        neutrino_0_p4.SetPtEtaPhiM(0, 0, 0, 0);
+        neutrino_1_p4.SetPtEtaPhiM(neutrino_1_pt, tau_1_p4.Eta(), tau_1_p4.Phi(), 0);
+    }
+    return std::pair<TLorentzVector, TLorentzVector> (neutrino_0_p4, neutrino_1_p4);
+}
+
+double CalculatePtBalance(const std::vector<TLorentzVector>& particles){
+    double vector_sum_x;
+    double vector_sum_y;
+    double scalar_sum;
+
+    for (auto& particle : particles) {
+        vector_sum_x += particle.Px();
+        vector_sum_y += particle.Py();
+        scalar_sum += particle.Pt();
+    }
+    //double vector_sum_x = ljet_0_p4.Px() + ljet_1_p4.Px() + tau_0_p4.Px() + tau_1_p4.Px();
+    //double vector_sum_y = ljet_0_p4.Py() + ljet_1_p4.Py() + tau_0_p4.Py() + tau_1_p4.Py();
+    double vector_sum_mag = std::sqrt(std::pow(vector_sum_x, 2) + std::pow(vector_sum_y, 2));
+
+    //double scalar_sum = ljet_0_p4.Pt() + ljet_1_p4.Pt() + tau_0_p4.Pt() + tau_1_p4.Pt();
+    double pt_bal = vector_sum_mag / scalar_sum;
+    return pt_bal;
+}
+
+int CalculateNGapJets(const double& jet_0_eta, const double& jet_1_eta, const std::vector<float>* JetEta) { 
+    double ngapjets = 0;
+    if (JetEta->size() > 2) {
+        double low_eta = jet_0_eta < jet_1_eta ? jet_0_eta : jet_1_eta;
+        double high_eta = jet_0_eta < jet_1_eta ? jet_1_eta : jet_0_eta;
+        if (JetEta->at(2) >= low_eta && JetEta->at(2) <= high_eta) {
+            ngapjets += 1;
+        }
+    } return ngapjets;
+}
+
+
+bool Region(const float& centrality, const int& ngapjets, std::string region) {
+    bool x = false;
+    if (centrality <= 1 && ngapjets <= 1) {
+        if (region == "all") {x = true;}
+        if (centrality <= 0.5 && ngapjets == 0) {
+            if (region == "SR") {x = true;}
+        } else {
+            if (region == "CR") {x = true;}
+            if (centrality <= 0.5 && ngapjets == 1) {
+                if (region == "CRa") {x = true;}
+            } else if (centrality > 0.5 && ngapjets == 1) {
+                if (region == "CRb") {x = true;}
+            } else if (centrality > 0.5 && ngapjets == 0) {
+                if (region == "CRc") {x = true;}
+            }     
+        }
+    } return x;
+}

@@ -20,7 +20,7 @@ void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConf
     // if in fast mode only loop over 1% of the entries
     Long64_t nLoop = nentries;
 
-    std::cout<<"Analysing "<<nLoop<<" Events!"<<std::endl;
+    //std::cout<<"Analysing "<<nLoop<<" Events!"<<std::endl;
 
     Long64_t nbytes = 0, nb = 0;
 
@@ -42,7 +42,7 @@ void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConf
         nb = fChain->GetEntry(jentry,0);    nbytes += nb;
 
         // First, check that we have at least two jets and two taus
-        if(TauPt->size() < 2 || JetPt->size() < 2) continue;
+        if(TauPt->size() < 2 || JetPt->size() < 2 || JetPt->size() > 3) continue;
         // Jet vectors
         TLorentzVector ljet_0_p4;
         TLorentzVector ljet_1_p4;
@@ -118,5 +118,5 @@ void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConf
     clock_t endTime = clock(); // get end time
     // calculate time taken and print it
     double time_spent = (endTime - startTime) / CLOCKS_PER_SEC;
-    std::cout << "Time processing == " <<time_spent << std::endl;
+    //std::cout << "Time processing == " <<time_spent << std::endl;
 }

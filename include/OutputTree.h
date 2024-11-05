@@ -26,11 +26,12 @@ class OutputTree {
     double m_deltaPhiLT;
     double m_jetRNNScore;
     double m_transverseMassLep;
-    double m_massTauLep;
+    double m_massTauTau;
     double m_tau_pT;
     double m_lep_pT;
     double m_jet0_pT;
     double m_jet1_pT;
     double m_met_pT;
     double m_event_number;
+    double m_metProjection;
 };
