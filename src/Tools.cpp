@@ -127,6 +127,49 @@ std::pair<TLorentzVector, TLorentzVector> GetNeutrinoVectors(const TLorentzVecto
     return std::pair<TLorentzVector, TLorentzVector> (neutrino_0_p4, neutrino_1_p4);
 }
 
+/*
+std::pair<TLorentzVector,TLorentzVector> GetNeutrinoVectors(const TLorentzVector& tau_0_p4, const TLorentzVector& tau_1_p4, const TLorentzVector& met_p4)
+{
+  double omega = CalculateOmega(tau_0_p4, tau_1_p4, met_p4);
+  TLorentzVector neu_0_p4;
+  TLorentzVector neu_1_p4;
+
+  TVector3 tau_0_dir = tau_0_p4.Vect();
+  tau_0_dir.SetZ(0);
+  tau_0_dir = tau_0_dir.Unit();
+  TVector3 tau_1_dir = tau_1_p4.Vect();
+  tau_1_dir.SetZ(0);
+  tau_1_dir = tau_1_dir.Unit();
+
+  if (omega >= 0 && omega <= 1)
+  {
+    double numerator_0 = met_p4.Vect().Dot((tau_0_dir - (tau_0_dir.Dot(tau_1_dir)) * tau_1_dir));
+    double denominator = 1 - std::pow(tau_0_dir.Dot(tau_1_dir),2);
+    double neu_0_pt = numerator_0/denominator;
+    neu_0_p4.SetPtEtaPhiM(neu_0_pt,tau_0_p4.Eta(),tau_0_p4.Phi(),0);
+
+    double numerator_1 = met_p4.Vect().Dot((tau_1_dir - (tau_0_dir.Dot(tau_1_dir)) * tau_0_dir));
+    double neu_1_pt = numerator_1/denominator;
+    neu_1_p4.SetPtEtaPhiM(neu_1_pt,tau_1_p4.Eta(),tau_1_p4.Phi(),0);
+  }
+  else if (omega < 0)
+  {
+    double neu_0_pt = met_p4.Vect() * tau_0_dir;
+    if (neu_0_pt >=0) neu_0_p4.SetPtEtaPhiM(neu_0_pt,tau_0_p4.Eta(),tau_0_p4.Phi(),0);
+    else neu_0_p4.SetPtEtaPhiM(-1*neu_0_pt,tau_0_p4.Eta(),tau_0_p4.Phi()+TMath::Pi(),0);
+    neu_1_p4.SetXYZM(0, 0, 0, 0);
+  }
+  else
+  {
+    double neu_1_pt = met_p4.Vect() * tau_1_dir;
+    neu_0_p4.SetXYZM(0, 0, 0, 0);
+    if (neu_1_pt >=0) neu_1_p4.SetPtEtaPhiM(neu_1_pt,tau_1_p4.Eta(),tau_1_p4.Phi(),0);
+    else neu_1_p4.SetPtEtaPhiM(-1*neu_1_pt,tau_1_p4.Eta(),tau_1_p4.Phi()+TMath::Pi(),0);
+  }
+  return std::pair<TLorentzVector,TLorentzVector> (neu_0_p4,neu_1_p4);
+}
+*/
+
 double CalculatePtBalance(const std::vector<TLorentzVector>& particles){
     double vector_sum_x;
     double vector_sum_y;

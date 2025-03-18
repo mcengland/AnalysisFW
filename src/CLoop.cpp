@@ -8,6 +8,7 @@
 
 std::vector<std::string> split(const std::string& s, char delimiter);
 TLorentzVector& toGeV(TLorentzVector &v);
+std::pair<TLorentzVector, TLorentzVector> GetNeutrinoVectors(const TLorentzVector& tau_0_p4, const TLorentzVector& tau_1_p4, const TLorentzVector& met_p4);
 
 void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConfig& config)
 {
@@ -15,7 +16,7 @@ void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConf
 
     if (fChain == 0) return;
 
-    Long64_t nentries = fChain->GetEntriesFast();
+    Long64_t nentries = fChain->GetEntries();
 
     // if in fast mode only loop over 1% of the entries
     Long64_t nLoop = nentries;
@@ -29,6 +30,9 @@ void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConf
     key = key+".root";
     createOutputFile(key);
 
+    //m_signalTree = OutputTree {"SIGNAL", "Signal TTree"};
+    //m_backgroundTree = OutputTree {"BG", "Background TTree"};
+
     // Create BDT
     m_vbfBDT = VBFBDT(config.m_bdtWeightsPath);
 
@@ -40,14 +44,19 @@ void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConf
         Long64_t ientry = LoadTree(jentry);
         if (ientry < 0) break;
         nb = fChain->GetEntry(jentry,0);    nbytes += nb;
+        //Skip entry that caused a problem for some reason
+        if (key == "VBFHtth30h20_2018_0.root") {
+            if (jentry > 330316) continue;
+
+        }
 
         // First, check that we have at least two jets and two taus
-        if(TauPt->size() < 2 || JetPt->size() < 2 || JetPt->size() > 3) continue;
+        if(TauPt->size() < 2 || JetPt->size() < 2) continue; //or 3
         // Jet vectors
         TLorentzVector ljet_0_p4;
         TLorentzVector ljet_1_p4;
-        ljet_1_p4.SetPtEtaPhiE(JetPt->at(1),JetEta->at(1),JetPhi->at(1),JetE->at(1));
         ljet_0_p4.SetPtEtaPhiE(JetPt->at(0),JetEta->at(0),JetPhi->at(0),JetE->at(0));
+        ljet_1_p4.SetPtEtaPhiE(JetPt->at(1),JetEta->at(1),JetPhi->at(1),JetE->at(1));
         ljet_0_p4 = toGeV(ljet_0_p4);
         ljet_1_p4 = toGeV(ljet_1_p4);
         // Tau vectors
@@ -58,11 +67,25 @@ void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConf
         tau_0_p4 = toGeV(tau_0_p4);
         tau_1_p4 = toGeV(tau_1_p4);
 
+        //MET vector
+        TLorentzVector met_p4;
+        met_p4.SetPtEtaPhiE(MET_met,0,MET_phi,MET_met);
+        met_p4 = toGeV(met_p4);
+
+        //Neutrino vectors
+        std::pair<TLorentzVector, TLorentzVector> neutrino_vectors = GetNeutrinoVectors(tau_0_p4, tau_1_p4, met_p4);
+        TLorentzVector nu_0_p4 = neutrino_vectors.first;
+        TLorentzVector nu_1_p4 = neutrino_vectors.second;
+
+        //Reconstructed tau vectors
+        TLorentzVector tau_0_reco_p4 = tau_0_p4 + nu_0_p4;
+        TLorentzVector tau_1_reco_p4 = tau_1_p4 + nu_1_p4;
+
         // Variable defining regions
         // DELTA RAPIDITY 2-JETS
         double delta_y = abs(ljet_0_p4.Rapidity()-ljet_1_p4.Rapidity());
         // Z BOSON CENTRALITY
-        double lepton_xi=(tau_0_p4+tau_1_p4).Rapidity();
+        double lepton_xi=(tau_0_reco_p4+tau_1_reco_p4).Rapidity();
         double dijet_xi=ljet_0_p4.Rapidity()+ljet_1_p4.Rapidity();
         double z_centrality=abs(lepton_xi-0.5*dijet_xi)/delta_y;
 
@@ -95,8 +118,8 @@ void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConf
 
         // fill histograms
         //cout << eventWeight;
-        if (saveHistograms) Fill(eventWeight, z_sample, key);
-        if (saveEvents) FillTree(eventWeight, z_sample, key);
+        if (saveHistograms) Fill(eventWeight, z_sample, key, config);
+        if (saveEvents) FillTree(eventWeight, z_sample, key, config);
         // end filling
 
     }

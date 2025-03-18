@@ -9,8 +9,8 @@
 struct CLoopConfig
 {
     CLoopConfig() = default;
-    CLoopConfig(bool saveHistograms, bool saveEvents, bool reweightMjj, std::string bdtWeightsPath, std::string region) : 
-        m_saveHistograms{saveHistograms}, m_saveEvents{saveEvents}, m_reweightMjj{reweightMjj}, m_bdtWeightsPath{bdtWeightsPath}, m_region{region} {}
+    CLoopConfig(bool saveHistograms, bool saveEvents, bool reweightMjj, std::string bdtWeightsPath, std::string region, std::string massRegion) : 
+        m_saveHistograms{saveHistograms}, m_saveEvents{saveEvents}, m_reweightMjj{reweightMjj}, m_bdtWeightsPath{bdtWeightsPath}, m_region{region}, m_massRegion{massRegion} {}
     ~CLoopConfig() = default;
     
     bool m_saveHistograms{true};
@@ -18,4 +18,5 @@ struct CLoopConfig
     bool m_reweightMjj{true};
     std::string m_bdtWeightsPath{""};
     std::string m_region{"all"};
+    std::string m_massRegion{""};
 };

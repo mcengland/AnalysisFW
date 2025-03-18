@@ -32,8 +32,8 @@ class CLoop {
    public :
    void Style(double lumFactor);
    void ActivateBranches(const std::string& key);
-   void Fill(double weight, int z_sample, const std::string& sampleName);
-   void FillTree(double weight, int z_sample, const std::string& sampleName);
+   void Fill(double weight, int z_sample, const std::string& sampleName, const CLoopConfig& config);
+   void FillTree(double weight, int z_sample, const std::string& sampleName, const CLoopConfig& config);
    void createOutputFile(const std::string& key);
    CLoop(TTree *tree=0,std::string sample_name="");
    ~CLoop();
@@ -59,6 +59,8 @@ class CLoop {
    // Output trees
    OutputTree m_signalTree{"SIGNAL", "Signal TTree"};
    OutputTree m_backgroundTree{"BG", "Background TTree"};
+   //Config
+   CLoopConfig config;
 };
 
 #endif

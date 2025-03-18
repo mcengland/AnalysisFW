@@ -350,4 +350,5 @@ void CLoop::createOutputFile(const std::string& key){
     const char*  name_root = key.c_str();
     // Create output file
     m_outputFile = std::make_unique<TFile>(name_root,"recreate");
+    m_outputFile->cd();
 }

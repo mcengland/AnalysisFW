@@ -18,20 +18,36 @@ class OutputTree {
         return m_Tree.get();
     }
 
+    //OutputTree& operator=(const OutputTree& other);
+
+    //OutputTree& operator=(const OutputTree& other) {
+    //    if (this != &other) { // Prevent self-assignment
+    //        m_Tree = std::make_unique<int>(*other.data); // Deep copy
+    //    }
+    //    return *this;
+    //}
+
     private:
     std::unique_ptr<TTree> m_Tree = nullptr;
     public: // To be able to access this members directly and assign in FillTree.
     double m_mcWeight;
     double m_mjj;
-    double m_deltaPhiLT;
-    double m_jetRNNScore;
-    double m_transverseMassLep;
-    double m_massTauTau;
-    double m_tau_pT;
-    double m_lep_pT;
+    //double m_deltaPhi;
+    double m_tau0_RNNScore;
+    double m_tau1_RNNScore;
+    //double m_transverseMassLep;
+    double m_mass_reco;
+    double m_tau0_pT;
+    double m_tau1_pT;
     double m_jet0_pT;
     double m_jet1_pT;
-    double m_met_pT;
+    //double m_met_pT;
     double m_event_number;
-    double m_metProjection;
+    //double m_metProjection;
+    double m_delta_yjj;
+    double m_omega;
+    double m_pt_bal;
+    double m_centrality;
+    double m_gapjets;
+    double m_bjets;
 };

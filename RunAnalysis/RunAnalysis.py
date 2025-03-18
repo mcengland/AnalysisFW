@@ -43,7 +43,7 @@ from AnalysisFW import CLoop,CLoopConfig
 # This is a hack to allow the C++ class to be pickled, see:
 # https://www.boost.org/doc/libs/1_84_0/libs/python/doc/html/reference/topics/pickle_support.html
 def CLoopConfig_getinitargs(self):
-  return (self.m_saveHistograms,self.m_saveEvents,self.m_reweightMjj,self.m_bdtWeightsPath,self.m_region)
+  return (self.m_saveHistograms,self.m_saveEvents,self.m_reweightMjj,self.m_bdtWeightsPath,self.m_region,self.m_massRegion)
 # now inject __getinitargs__ (Python is a dynamic language!)
 CLoopConfig.__getinitargs__ = CLoopConfig_getinitargs
 
@@ -119,17 +119,17 @@ def getSamplesToRun(option,allData,allMC):
                     allMC+=value
         return
     
-def createOutputDirectory(outputPath,treeName,verbosity):
-    if not os.path.exists(outputPath):
+def createOutputDirectory(outputPath,treeName,verbosity,massRegion):
+    if not os.path.exists(outputPath+"/"+massRegion):
         if verbosity=="DEBUG":
-            print(DEBUG("Creating output directory at: "), os.path.abspath(outputPath))
-        os.makedirs(outputPath)
-    if not os.path.exists(outputPath+"/"+treeName):
+            print(DEBUG("Creating output directory at: "), os.path.abspath(outputPath+"/"+massRegion))
+        os.makedirs(outputPath+"/"+massRegion)
+    if not os.path.exists(outputPath+"/"+massRegion+"/"+treeName):
         if verbosity=="DEBUG":
-            print(DEBUG("Creating output for tree at: "), os.path.abspath(outputPath)+"/"+treeName)
-        os.makedirs(outputPath+"/"+treeName)
+            print(DEBUG("Creating output for tree at: "), os.path.abspath(outputPath)+"/"+massRegion+"/"+treeName)
+        os.makedirs(outputPath+"/"+massRegion+"/"+treeName)
 
-def createConfigObject(jobTypeArgument,verbosity,region):
+def createConfigObject(jobTypeArgument,verbosity,region,massRegion):
     makeHistograms = 'h' in jobTypeArgument
     if verbosity=="DEBUG" and makeHistograms:
         print(DEBUG("Making histograms!"))
@@ -139,10 +139,10 @@ def createConfigObject(jobTypeArgument,verbosity,region):
     makeReweighting = 'r' in jobTypeArgument
     if verbosity=="DEBUG" and makeReweighting:
         print(DEBUG("Making reweighting!"))
-    mvaWeightsPath = findMainPath()+"/data/MVA-Weights/10Folds_BDT-0.3.weights.xml"
+    mvaWeightsPath = findMainPath()+"/MVA-VBF-TauTau/dataset/weights/10Folds_BDT-0.3.weights.xml"#"/data/MVA-Weights/10Folds_BDT-0.3.weights.xml"
     if verbosity=="DEBUG":
         print(DEBUG("MVA weights path: "), mvaWeightsPath)
-    return CLoopConfig(makeHistograms,makeNTuples,makeReweighting,mvaWeightsPath,region)
+    return CLoopConfig(makeHistograms,makeNTuples,makeReweighting,mvaWeightsPath,region,massRegion)
 
 def createArgumentParser():
     # Parse the script arguments
@@ -156,13 +156,14 @@ def createArgumentParser():
     parser.add_argument("--jobType", help="Type of job to run.",type=str,default="h",choices=["h","n","hn","hr","hnr"])
     parser.add_argument("--outputDir", help="Path of to the directory used to store the processed samples.",type=str,default=findMainPath()+"/Results")
     parser.add_argument("--j", help="Number of cores to use.",type=int,default=1)
-    parser.add_argument("--region",help="",type=str,default="all",choices=["all","SR","CR","CRa","CRb","CRc"])
+    parser.add_argument("--region", help="",type=str,default="SR",choices=["all","SR","CR","CRa","CRb","CRc"])
+    parser.add_argument("--massRegion", help="",type=str,default="low",choices=["low","mid","high"])
     return parser
 
-def getArgumentTupleForSampleGroup(treeName,sampleGroup,verbosity,outputPath,analysisConfig):
-    return product([treeName],sampleGroup,[verbosity],[outputPath],[analysisConfig])
+def getArgumentTupleForSampleGroup(treeName,sampleGroup,verbosity,outputPath,massRegion,analysisConfig):
+    return product([treeName],sampleGroup,[verbosity],[outputPath],[massRegion],[analysisConfig])
 
-def runAnalysis(treeName,sampleName,verbosity,outputPath,analysisConfig):
+def runAnalysis(treeName,sampleName,verbosity,outputPath,massRegion,analysisConfig):
     # Get the absolute path of the file
     filePath = getAbsoluteFilePath(sampleName)
     if verbosity=="DEBUG":
@@ -191,7 +192,7 @@ def runAnalysis(treeName,sampleName,verbosity,outputPath,analysisConfig):
     analysis.Loop(weight, sampleID, sampleName, analysisConfig)
     del analysis
     file.Close()
-    success = os.system("mv "+sampleName+".root "+outputPath+"/"+treeName+"/"+sampleName+treeName+".root")
+    success = os.system("mv "+sampleName+".root "+outputPath+"/"+massRegion+"/"+treeName+"/"+sampleName+treeName+".root")
     if success != 0:
         print(ERROR("Error moving file to Results directory."))
         sys.exit(1)
@@ -216,14 +217,14 @@ if __name__ == "__main__":
         print(DEBUG("Only one core will be used when in DEBUG mode."))
 
     # Create the output directory
-    createOutputDirectory(args.outputDir,args.treeName,verbosity)
+    createOutputDirectory(args.outputDir,args.treeName,verbosity,args.massRegion)
 
     # Create the config object to pass to CLoop
-    config = createConfigObject(args.jobType,verbosity,args.region)
+    config = createConfigObject(args.jobType,verbosity,args.region,args.massRegion)
 
     # If a single sample is chosen, run just over that
     if args.singleSample != "":
-        runAnalysis(args.treeName,args.singleSample,verbosity,args.outputDir,config)
+        runAnalysis(args.treeName,args.singleSample,verbosity,args.outputDir,args.massRegion,config)
     
     # If an input file is given, run over the samples in the file
     elif args.inputFile != "":
@@ -232,7 +233,7 @@ if __name__ == "__main__":
         with open(args.inputFile) as f:
             for line in f:
                 listOfSamples.append(line.strip())
-        samplesTuple = getArgumentTupleForSampleGroup(args.treeName,listOfSamples,verbosity,args.outputDir, config)
+        samplesTuple = getArgumentTupleForSampleGroup(args.treeName,listOfSamples,verbosity,args.outputDir,args.massRegion,config)
         print(TITLE("Running over "+str(len(listOfSamples))+" samples\n"))
         with multiprocessing.Pool(processes=nCPU) as pool:
             pool.starmap(runAnalysis, samplesTuple)
@@ -242,8 +243,8 @@ if __name__ == "__main__":
         allData = []
         allMC = []
         getSamplesToRun(args.samples,allData,allMC)
-        dataTuple = getArgumentTupleForSampleGroup(args.treeName,allData,verbosity,args.outputDir, config)
-        mcTuple = getArgumentTupleForSampleGroup(args.treeName,allMC,verbosity,args.outputDir, config)
+        dataTuple = getArgumentTupleForSampleGroup(args.treeName,allData,verbosity,args.outputDir,args.massRegion,config)
+        mcTuple = getArgumentTupleForSampleGroup(args.treeName,allMC,verbosity,args.outputDir,args.massRegion,config)
 
         print(TITLE("Running over "+str(len(allData))+" DATA samples\n"))
         with multiprocessing.Pool(processes=nCPU) as pool:
