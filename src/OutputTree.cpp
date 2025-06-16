@@ -25,4 +25,5 @@ OutputTree::OutputTree(const char* treeName, const char* treeDescription){
     m_Tree->Branch("centrality", &m_centrality);
     m_Tree->Branch("n_gapjets", &m_gapjets);
     m_Tree->Branch("n_bjets", &m_bjets);
+    m_Tree->Branch("passedTriggers", &m_passedTriggers);
 }

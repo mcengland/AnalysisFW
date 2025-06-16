@@ -139,7 +139,7 @@ def createConfigObject(jobTypeArgument,verbosity,region,massRegion):
     makeReweighting = 'r' in jobTypeArgument
     if verbosity=="DEBUG" and makeReweighting:
         print(DEBUG("Making reweighting!"))
-    mvaWeightsPath = findMainPath()+"/MVA-VBF-TauTau/dataset/weights/10Folds_BDT-0.3.weights.xml"#"/data/MVA-Weights/10Folds_BDT-0.3.weights.xml"
+    mvaWeightsPath = findMainPath()+"/MVA-VBF-TauTau/dataset/weights/10Folds_VBFBDT.weights.xml"#"/data/MVA-Weights/10Folds_BDT-0.3.weights.xml"
     if verbosity=="DEBUG":
         print(DEBUG("MVA weights path: "), mvaWeightsPath)
     return CLoopConfig(makeHistograms,makeNTuples,makeReweighting,mvaWeightsPath,region,massRegion)
@@ -157,7 +157,7 @@ def createArgumentParser():
     parser.add_argument("--outputDir", help="Path of to the directory used to store the processed samples.",type=str,default=findMainPath()+"/Results")
     parser.add_argument("--j", help="Number of cores to use.",type=int,default=1)
     parser.add_argument("--region", help="",type=str,default="SR",choices=["all","SR","CR","CRa","CRb","CRc"])
-    parser.add_argument("--massRegion", help="",type=str,default="low",choices=["low","mid","high"])
+    parser.add_argument("--massRegion", help="",type=str,default="low",choices=["low","mid","high","training"])
     return parser
 
 def getArgumentTupleForSampleGroup(treeName,sampleGroup,verbosity,outputPath,massRegion,analysisConfig):

@@ -1,4 +1,5 @@
 #include <vector>
+#include <string>
 #include <algorithm>
 #include "CLoop.h"
 #include "OutputTree.h"
@@ -75,11 +76,7 @@ void CLoop::Fill(double weight, int z_sample, const std::string& sampleName, con
     else if (TauRNNJetScore->at(1) > 0.55 && TauNCoreTracks->at(1) == 3) passed_tight_tau1_RNN = true;
     passed_tight_tau_RNN = passed_tight_tau0_RNN && passed_tight_tau1_RNN;
 
-    bool passed_tau_RNN{false};
-    if (config.m_massRegion == "high") passed_tau_RNN = passed_tight_tau_RNN;
-    else passed_tau_RNN = passed_medium_tau_RNN;
-
-    passed_tau_RNN = passed_loose_tau_RNN;
+    bool passed_tau_RNN = passed_loose_tau_RNN;
 
     if (q_tau_0 != q_tau_1 && TauPt->size() == 2 && JetPt->size() < 4){
         //Dijet invariant mass
@@ -87,6 +84,19 @@ void CLoop::Fill(double weight, int z_sample, const std::string& sampleName, con
 
         //trigger decision
         bool trigger_decision = passTrigger;
+
+        std::string singletautriggers = "HLT_tau80_medium1_tracktwo_L1TAU60, HLT_tau80_medium1_tracktwo_L1TAU60, HLT_tau125_medium1_tracktwo, HLT_tau160_medium1_tracktwo, HLT_tau160_medium1_tracktwo, HLT_tau160_medium1_tracktwo_L1TAU100, HLT_tau160_medium1_tracktwoEF_L1TAU100, HLT_tau160_medium1_tracktwoEF_L1TAU100, HLT_tau160_mediumRNN_tracktwoMVA_L1TAU100";
+        std::string ditautriggers = "HLT_tau35_medium1_tracktwo_tau25_medium1_tracktwo_L1TAU20IM_2TAU12IM, HLT_tau80_medium1_tracktwo_L1TAU60_tau50_medium1_tracktwo_L1TAU12, HLT_tau80_medium1_tracktwo_L1TAU60_tau50_medium1_tracktwo_L1TAU12, HLT_tau80_medium1_tracktwo_L1TAU60_tau50_medium1_tracktwo_L1TAU12, HLT_tau80_medium1_tracktwo_L1TAU60_tau50_medium1_tracktwo_L1TAU12, HLT_tau80_medium1_tracktwo_L1TAU60_tau60_medium1_tracktwo_L1TAU40, HLT_tau80_medium1_tracktwoEF_L1TAU60_tau60_medium1_tracktwoEF_L1TAU40, HLT_tau80_medium1_tracktwoEF_L1TAU60_tau60_medium1_tracktwoEF_L1TAU40, HLT_tau80_mediumRNN_tracktwoMVA_L1TAU60_tau60_mediumRNN_tracktwoMVA_L1TAU40";
+
+        double triggersPassed = 0;
+
+        for (const auto& trigger : *PassedTriggers) {
+            //std::cout << trigger << std::endl;
+            if (singletautriggers.find(trigger) != std::string::npos) {
+                triggersPassed = 1;
+            }else if (ditautriggers.find(trigger) != std::string::npos) {
+                triggersPassed = 2;
+            };
 
         if (m_jj >= 250) {
 
@@ -127,57 +137,60 @@ void CLoop::Fill(double weight, int z_sample, const std::string& sampleName, con
             double transverseMassTau1 = sqrt(2*tau_1_p4.Pt()*met_p4.Pt()*(1-cos(tau_1_p4.Phi()-met_p4.Phi())));
 
             // Handling BDT
-            m_vbfBDT.update(m_jj, 0.0, 0.0, eventNumber);
+            float bdt_transmasstau1 = m_tautau > 200 ? transverseMassTau1/std::pow(m_tautau,0.3) : transverseMassTau1/std::pow(200,0.3);
+            m_vbfBDT.update(m_jj, delta_y_jj, z_centrality, eventNumber);
             double VBFBDT_score = m_vbfBDT.evaluate();
 
             //Cuts
-            std::vector<int> cuts_vector = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+            std::vector<int> cuts_vector = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-            /*
-            if (ljet_0_p4.Pt() >= 75) {cuts_vector[0] = 1;}
-            if (ljet_1_p4.Pt() >= 70) {cuts_vector[1] = 1;}
-            if (tau_0_p4.Pt() >= 80) {cuts_vector[2] = 1;}
-            if (tau_1_p4.Pt() >= 60) {cuts_vector[3] = 1;}
-            if (m_jj >= 1000) {cuts_vector[4] = 1;}
-            if (config.m_massRegion == "low") {
-                if (m_reco >= 66 && m_reco <= 116) {cuts_vector[5] = 1;}
-                cuts_vector[6] = 1;
-            }else if (config.m_massRegion == "mid") {
-                if (m_reco >= 101 && m_reco <= 160) {cuts_vector[5] = 1;}
-                cuts_vector[6] = 1;
-            }else if (config.m_massRegion == "high") {
-                if (m_reco >= 160) {cuts_vector[5] = 1;}
+            if (config.m_massRegion == "low" || config.m_massRegion == "mid" || config.m_massRegion == "high") {
+
+                if (ljet_0_p4.Pt() >= 75) {cuts_vector[0] = 1;}
+                if (ljet_1_p4.Pt() >= 70) {cuts_vector[1] = 1;}
+                if (tau_0_p4.Pt() >= 80) {cuts_vector[2] = 1;}
+                if (tau_1_p4.Pt() >= 60) {cuts_vector[3] = 1;}
+                if (m_jj >= 750) {cuts_vector[4] = 1;}
+                if (config.m_massRegion == "low") {
+                    if (m_reco >= 66 && m_reco <= 116) {cuts_vector[5] = 1;}
+                }else if (config.m_massRegion == "mid") {
+                    if (m_reco >= 101 && m_reco <= 160) {cuts_vector[5] = 1;}
+                }else if (config.m_massRegion == "high") {
+                    if (m_reco >= 160) {cuts_vector[5] = 1;}
                 if (m_reco/m_tautau < 4) {cuts_vector[6] = 1;}
-            }if (delta_y_jj >= 2) {cuts_vector[7] = 1;}
-            if (omega > -0.4 && omega < 1.4) {cuts_vector[8] = 1;}
-            if (pt_bal <= 0.15) {cuts_vector[9] = 1;}
-            //if (z_centrality <= 1.0 && z_centrality >= 0.5 || n_gapjets == 1) {
-            //    cuts_vector[10] = 1;
-            //    cuts_vector[11] = 1;}
-            if (z_centrality <= 0.5) {cuts_vector[10] = 1;}
-            if (n_gapjets == 0) {cuts_vector[11] = 1;}
-            if (n_bjets == 0) {cuts_vector[12] = 1;}
-            if (passed_tau_RNN) {cuts_vector[13] = 1;}
-            if (passTrigger) {cuts_vector[14] = 1;}
-            if (VBFBDT_score > -1) {cuts_vector[15] = 1;}
-            */
+                }if (delta_y_jj >= 2) {cuts_vector[7] = 1;}
+                if (pt_bal <= 0.15) {cuts_vector[8] = 1;} //0.10
+                //if (z_centrality <= 1.0 && z_centrality >= 0.5 || n_gapjets == 1) {
+                //    cuts_vector[10] = 1;
+                //    cuts_vector[11] = 1;}
+                if (z_centrality <= 0.5) {cuts_vector[9] = 1;} //0.3
+                if (n_gapjets == 0) {cuts_vector[10] = 1;}
+                if (n_bjets == 0) {cuts_vector[11] = 1;}
+                if (passed_tau_RNN) {cuts_vector[12] = 1;}
+                if (passTrigger) {cuts_vector[13] = 1;}
+                if (VBFBDT_score > -0.2) {cuts_vector[14] = 1;}
+            }
             
-            if (ljet_0_p4.Pt() >= 65) {cuts_vector[0] = 1;}
-            if (ljet_1_p4.Pt() >= 60) {cuts_vector[1] = 1;}
-            if (tau_0_p4.Pt() >= 70) {cuts_vector[2] = 1;}
-            if (tau_1_p4.Pt() >= 50) {cuts_vector[3] = 1;}
-            if (m_jj >= 500) {cuts_vector[4] = 1;}
-            if (m_reco >= 116) {cuts_vector[5] = 1;}
-            if (m_reco/m_tautau < 4) {cuts_vector[6] = 1;}
-            if (delta_y_jj >= 0) {cuts_vector[7] = 1;}
-            if (omega > -0.6 && omega < 1.6) {cuts_vector[8] = 1;}
-            if (pt_bal <= 0.2) {cuts_vector[9] = 1;}
-            if (z_centrality <= 1) {cuts_vector[10] = 1;}
-            if (n_gapjets == 0) {cuts_vector[11] = 1;}
-            if (n_bjets == 0) {cuts_vector[12] = 1;}
-            if (passed_tau_RNN) {cuts_vector[13] = 1;}
-            if (passTrigger) {cuts_vector[14] = 1;}
-            if (VBFBDT_score > -1) {cuts_vector[15] = 1;}
+            if (config.m_massRegion == "training") {
+
+                if (ljet_0_p4.Pt() >= 65) {cuts_vector[0] = 1;}
+                if (ljet_1_p4.Pt() >= 60) {cuts_vector[1] = 1;}
+                if (tau_0_p4.Pt() >= 70) {cuts_vector[2] = 1;}
+                if (tau_1_p4.Pt() >= 50) {cuts_vector[3] = 1;}
+                if (m_jj >= 500) {cuts_vector[4] = 1;}
+                if (m_reco >= 116) {cuts_vector[5] = 1;}
+                if (m_reco/m_tautau < 4) {cuts_vector[6] = 1;}
+                if (delta_y_jj >= 0) {cuts_vector[7] = 1;}
+                if (omega > -0.6 && omega < 1.6) {cuts_vector[8] = 1;}
+                if (pt_bal <= 0.2) {cuts_vector[8] = 1;}
+                if (z_centrality <= 1) {cuts_vector[9] = 1;}
+                if (n_gapjets == 0) {cuts_vector[10] = 1;}
+                if (n_bjets == 0) {cuts_vector[11] = 1;}
+                if (passed_tau_RNN) {cuts_vector[12] = 1;}
+                if (passTrigger) {cuts_vector[13] = 1;}
+                cuts_vector[14] = 1; //if (VBFBDT_score > -1) {}
+
+            }
             
             int sum = 0;
             for (auto &j : cuts_vector){sum = sum + j;}
@@ -206,6 +219,7 @@ void CLoop::Fill(double weight, int z_sample, const std::string& sampleName, con
             n_bjetsContainer.Fill(n_bjets,weight,cuts_vector);
             massRatioContainer.Fill(m_reco/m_tautau,weight,cuts_vector);
             triggerContainer.Fill(passTrigger,weight,cuts_vector);
+            triggersContainer.Fill(triggersPassed,weight,cuts_vector);
             bdtContainer.Fill(VBFBDT_score,weight,cuts_vector);
             if (TauNCoreTracks->at(0)==1) rnn_score_1p_0Container.Fill(TauRNNJetScore->at(0),weight,cuts_vector);
             else if (TauNCoreTracks->at(0)==3) rnn_score_3p_0Container.Fill(TauRNNJetScore->at(0),weight,cuts_vector);
@@ -286,11 +300,7 @@ void CLoop::FillTree(double weight, int z_sample, const std::string& sampleName,
     else if (TauRNNJetScore->at(1) > 0.55 && TauNCoreTracks->at(1) == 3) passed_tight_tau1_RNN = true;
     passed_tight_tau_RNN = passed_tight_tau0_RNN && passed_tight_tau1_RNN;
 
-    bool passed_tau_RNN{false};
-    if (config.m_massRegion == "high") passed_tau_RNN = passed_tight_tau_RNN;
-    else passed_tau_RNN = passed_medium_tau_RNN;
-
-    passed_tau_RNN = passed_loose_tau_RNN;
+    bool passed_tau_RNN = passed_loose_tau_RNN;
 
     if (q_tau_0 != q_tau_1 && TauPt->size() == 2 && JetPt->size() < 4){
         //Dijet invariant mass
@@ -303,7 +313,7 @@ void CLoop::FillTree(double weight, int z_sample, const std::string& sampleName,
 
             //Tau-tau invariant mass
             double m_tautau = sqrt(2 * tau_0_p4.Pt() * tau_1_p4.Pt() * (cosh(tau_1_p4.Eta() - tau_0_p4.Eta()) - cos(tau_1_p4.Phi() - tau_0_p4.Phi())));
-            
+
             //Difference in rapidity between tagging jets
             double delta_y_jj = abs(ljet_0_p4.Rapidity() - ljet_1_p4.Rapidity());
 
@@ -368,7 +378,7 @@ void CLoop::FillTree(double weight, int z_sample, const std::string& sampleName,
             }
 
             if (passedAllCuts) {
-                bool isVBF = sampleName.find("VBF_Ztautau") != std::string::npos || sampleName.find("VBFH") != std::string::npos;
+                bool isVBF = sampleName.find("VBF_Ztautau") != std::string::npos || sampleName.find("VBFH") != std::string::npos || sampleName.find("VJJ") != std::string::npos || sampleName.find("Zp") != std::string::npos;
                 if (isVBF){
                     m_signalTree.m_mcWeight = weight;
                     m_signalTree.m_mass_reco = m_reco;
@@ -386,6 +396,7 @@ void CLoop::FillTree(double weight, int z_sample, const std::string& sampleName,
                     m_signalTree.m_gapjets = n_gapjets;
                     m_signalTree.m_bjets = n_bjets;
                     m_signalTree.m_event_number = eventNumber;
+                    m_signalTree.m_passedTriggers = *PassedTriggers;
                     m_signalTree.FillTree();
                 } else{
                     m_backgroundTree.m_mcWeight = weight;
@@ -404,10 +415,10 @@ void CLoop::FillTree(double weight, int z_sample, const std::string& sampleName,
                     m_backgroundTree.m_gapjets = n_gapjets;
                     m_backgroundTree.m_bjets = n_bjets;
                     m_backgroundTree.m_event_number = eventNumber;
+                    m_backgroundTree.m_passedTriggers = *PassedTriggers;
                     m_backgroundTree.FillTree();
                 }
             }
         }
     }
 }
-

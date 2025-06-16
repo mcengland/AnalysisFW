@@ -1,6 +1,8 @@
 #pragma once
 #include <TTree.h>
 #include <memory>
+#include <string>
+#include <vector>
 
 class OutputTree {
     public:
@@ -17,15 +19,6 @@ class OutputTree {
     const TTree* GetTree() const {
         return m_Tree.get();
     }
-
-    //OutputTree& operator=(const OutputTree& other);
-
-    //OutputTree& operator=(const OutputTree& other) {
-    //    if (this != &other) { // Prevent self-assignment
-    //        m_Tree = std::make_unique<int>(*other.data); // Deep copy
-    //    }
-    //    return *this;
-    //}
 
     private:
     std::unique_ptr<TTree> m_Tree = nullptr;
@@ -50,4 +43,5 @@ class OutputTree {
     double m_centrality;
     double m_gapjets;
     double m_bjets;
+    std::vector<std::string> m_passedTriggers;
 };

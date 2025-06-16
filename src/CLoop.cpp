@@ -47,7 +47,6 @@ void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConf
         //Skip entry that caused a problem for some reason
         if (key == "VBFHtth30h20_2018_0.root") {
             if (jentry > 330316) continue;
-
         }
 
         // First, check that we have at least two jets and two taus

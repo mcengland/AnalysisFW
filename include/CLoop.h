@@ -58,7 +58,7 @@ class CLoop {
    VBFBDT m_vbfBDT;
    // Output trees
    OutputTree m_signalTree{"SIGNAL", "Signal TTree"};
-   OutputTree m_backgroundTree{"BG", "Background TTree"};
+   OutputTree m_backgroundTree{"BACKGROUND", "Background TTree"};
    //Config
    CLoopConfig config;
 };
