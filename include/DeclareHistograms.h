@@ -1,7 +1,7 @@
 #pragma once
 
 double pi=TMath::Pi();
-std::vector<std::string> cutNames{"basic","j0pt","j1pt","t0pt","t1pt","mjj","m_reco","m_ratio","dyjj","ptbal","xi","ngj","nbj","rnn","trigger","bdt"};
+std::vector<std::string> cutNames{"basic","j0pt","j1pt","t0pt","t1pt","mjj","m_reco","omega","dyjj","ptbal","xi","ngj","nbj","rnn","trigger","bdt"};
 std::vector<std::string> notFull{"basic","all"};
 
 // Raw historgrams
@@ -16,7 +16,7 @@ histogramContainer n_bjetsContainer{"n_bjets","Number of b_jets",2,-0.5,1.5,cutN
 histogramContainer mass_jjContainer{"mass_jj","Invariant mass di_jet system",100,0,5000,cutNames,"mjj"};
 histogramContainer ljet0_ptContainer{"ljet0_pt","Light jet0 pT",200,0,1000,cutNames,"j0pt"};
 histogramContainer ljet1_ptContainer{"ljet1_pt","Light jet1 pT",200,0,1000,cutNames,"j1pt"};
-histogramContainer bdtContainer{"bdtScore","BDT Score",20,-1,1,cutNames,"bdt"};
+histogramContainer bdtContainer{"bdtScore","BDT Score",40,-1,1,cutNames,"bdt"};
 histogramContainer visibleMassContainer{"visibleMass","Visible mass tau-tau",100,0,1000,cutNames};
 histogramContainer tau1TransMassContainer{"tau1TransMass","Transverse mass sub-leading Tau",500,0,500,cutNames};
 histogramContainer rnn_score_1p_0Container{"rnn_score_1p_tau0","RNN Score 1 prong tau 0",40,0,1,cutNames,"rnn"};
@@ -30,11 +30,11 @@ histogramContainer rnn_score_3p_1Container{"rnn_score_3p_tau1","RNN Score 3 pron
 //histogramContainer delta_R_tau_1_jetContainer{"delta_R_tau1jet","Delta R tau1-jet",60,0,6,cutNames};
 //histogramContainer metProjecClosestTauContainer{"projec_closest_lep","MET projection to the closest tau",100,-200,200,cutNames,};
 histogramContainer delta_yjjContainer{"delta_yjj","Difference in rapidity between tagging jets",20,0,10,cutNames,"dyjj"};
-histogramContainer omegaContainer{"omega","Omega",70,-3,4,cutNames};
-histogramContainer reconstructedMassContainer{"reconstructedMass","Reconstructed invariant mass of taus and neutrinos",1000,0,1000,cutNames,"m_reco"};
+histogramContainer omegaContainer{"omega","Omega",70,-3,4,cutNames,"omega"};
+histogramContainer reconstructedMassContainer{"reconstructedMass","Reconstructed invariant mass of taus and neutrinos",3500,0,3500,cutNames,"m_reco"};
 histogramContainer ptBalanceContainer{"pt_bal","Pt balance",125,0,0.25,cutNames,"ptbal"};
 histogramContainer zcentralityContainer{"centrality","Z-centrality",40,0,2,cutNames,"xi"};
 histogramContainer nGapJetsContainer{"n_gapjets","Number of gap jets",2,-0.5,1.5,cutNames,"ngj"};
-histogramContainer massRatioContainer{"m_reco_vis","Ratio of reconstucted mass to visible mass",16,0,8,cutNames,"m_ratio"};
+histogramContainer massRatioContainer{"m_reco_vis","Ratio of reconstucted mass to visible mass",16,0,8,cutNames};
 histogramContainer triggerContainer{"trigger","Passed trigger",2,0,2,cutNames,"trigger"};
 histogramContainer triggersContainer{"triggers","Passed triggers",3,0,3,cutNames};

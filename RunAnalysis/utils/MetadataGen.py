@@ -83,6 +83,9 @@ sampleNameDSID_dict = {
 700602: 'VV_QCD9',
 700603: 'VV_QCD10',
 700604: 'VV_QCD11',
+700792: 'Ztautau_sh2214_1',
+700793: 'Ztautau_sh2214_2',
+700794: 'Ztautau_sh2214_3',
 1: 'data',
 558313: 'VJJ_low',
 558314: 'VJJ_high',
@@ -92,8 +95,27 @@ sampleNameDSID_dict = {
 545891: 'Zp350',
 545892: 'Zp400',
 545893: 'Zp450',
-545894: 'Zp500'
+545894: 'Zp500',
+567845: 'Zp550',
+567846: 'Zp600',
+567847: 'Zp650',
+567848: 'Zp700',
+567849: 'Zp750',
+567850: 'Zp800',
+567851: 'Zp850',
+567852: 'Zp900',
+567853: 'Zp950',
+567854: 'Zp1000',
+567855: 'Zp1200',
+567856: 'Zp1400',
+567857: 'Zp1600',
+567858: 'Zp1800',
+567859: 'Zp2000',
+567860: 'Zp2500',
+567861: 'Zp3000'
 }
+
+#sampleNameDSID_dict = {700360: 'test'}
 
 # THIS FUNCTION MIGHT CHANGE FROM ONE NTUPLE FORMAT TO ANOTHER
 def getDSID(rootFiles):

@@ -10,7 +10,7 @@ def findMainPath():
 
 # Z->tautau datasets
 v26Paths = {
-"f25503me": ['/Users/user/Documents/AnalysisFW/data']
+"f25503me": ['/eos/user/m/mienglan/Documents/Documents/AnalysisFW/data']
 }
 
 # Set up the example path for the analysis depending on the user machine name.

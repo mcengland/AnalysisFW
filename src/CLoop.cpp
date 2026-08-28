@@ -9,6 +9,7 @@
 std::vector<std::string> split(const std::string& s, char delimiter);
 TLorentzVector& toGeV(TLorentzVector &v);
 std::pair<TLorentzVector, TLorentzVector> GetNeutrinoVectors(const TLorentzVector& tau_0_p4, const TLorentzVector& tau_1_p4, const TLorentzVector& met_p4);
+int CalculateNGapJets(const double& jet_0_eta, const double& jet_1_eta, const std::vector<float>* JetEta);
 
 void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConfig& config)
 {
@@ -45,9 +46,9 @@ void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConf
         if (ientry < 0) break;
         nb = fChain->GetEntry(jentry,0);    nbytes += nb;
         //Skip entry that caused a problem for some reason
-        if (key == "VBFHtth30h20_2018_0.root") {
-            if (jentry > 330316) continue;
-        }
+        //if (key == "VBFHtth30h20_2018_0.root") {
+            //if (jentry > 330316) continue;
+        //}
 
         // First, check that we have at least two jets and two taus
         if(TauPt->size() < 2 || JetPt->size() < 2) continue; //or 3
@@ -88,14 +89,22 @@ void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConf
         double dijet_xi=ljet_0_p4.Rapidity()+ljet_1_p4.Rapidity();
         double z_centrality=abs(lepton_xi-0.5*dijet_xi)/delta_y;
 
+        //GAP JETS
+        int n_gapjets = CalculateNGapJets(ljet_0_p4.Eta(), ljet_1_p4.Eta(), JetEta);
+
         Region region = Region::DefaultNoRW;
-        if (z_centrality<0.5){region = Region::SR;}
-        else if (z_centrality<=1.0){region = Region::CR;}
+        if ((z_centrality<0.5 && z_centrality<=1) && n_gapjets==0){region = Region::SR;}
+        else if ((z_centrality<0.5 && z_centrality<=1) && n_gapjets==1){region = Region::CRa;}
+        else if ((z_centrality>=0.5 && z_centrality<=1) && n_gapjets==1){region = Region::CRb;}
+        else if ((z_centrality>=0.5 && z_centrality<=1) && n_gapjets==0){region = Region::CRc;}
 
         double mjj = sqrt(2*(ljet_0_p4.Dot(ljet_1_p4)));
-        double mjj_w = 1.0;
+        bool do_data_driven = true;
+        bool do_mc_driven = true;
+        double mjj_w = calculateMjjWeight(do_data_driven, do_mc_driven, mjj, region, z_sample);
 
         // mjj reweighting
+        /*
         bool reweight_mjj = config.m_reweightMjj;
         if (reweight_mjj){
             MC mcSample = static_cast<MC>(z_sample);
@@ -107,6 +116,7 @@ void CLoop::Loop(float lumFactor, int z_sample, std::string key, const CLoopConf
                 mjj_w = mjj_rw(mjj,parametersMadGraph[region]);
             }
         }
+        */
         double eventWeight = 1;
         // check if event is from real data
         if (!(key.substr(0,4)=="data")) {

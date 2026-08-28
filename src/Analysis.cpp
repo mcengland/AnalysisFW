@@ -98,6 +98,8 @@ void CLoop::Fill(double weight, int z_sample, const std::string& sampleName, con
                 triggersPassed = 2;
             };
 
+        }
+
         if (m_jj >= 250) {
 
             //Tau-tau invariant mass
@@ -157,18 +159,20 @@ void CLoop::Fill(double weight, int z_sample, const std::string& sampleName, con
                     if (m_reco >= 101 && m_reco <= 160) {cuts_vector[5] = 1;}
                 }else if (config.m_massRegion == "high") {
                     if (m_reco >= 160) {cuts_vector[5] = 1;}
-                if (m_reco/m_tautau < 4) {cuts_vector[6] = 1;}
-                }if (delta_y_jj >= 2) {cuts_vector[7] = 1;}
-                if (pt_bal <= 0.15) {cuts_vector[8] = 1;} //0.10
-                //if (z_centrality <= 1.0 && z_centrality >= 0.5 || n_gapjets == 1) {
-                //    cuts_vector[10] = 1;
-                //    cuts_vector[11] = 1;}
+                }else if (config.m_massRegion == "all") {
+                    cuts_vector[5] = 1;
+                }if (m_reco/m_tautau < 4) cuts_vector[6] = 1;
+                if (delta_y_jj >= 2) {cuts_vector[7] = 1;}
+                if (pt_bal <= 0.15) {cuts_vector[8] = 1;}
                 if (z_centrality <= 0.5) {cuts_vector[9] = 1;} //0.3
                 if (n_gapjets == 0) {cuts_vector[10] = 1;}
+                //cuts_vector[9] = 1;
+                //cuts_vector[10] = 1;
+                //if (n_gapjets == 0 && z_centrality <= 0.5) {cuts_vector[10] = 0;}
                 if (n_bjets == 0) {cuts_vector[11] = 1;}
                 if (passed_tau_RNN) {cuts_vector[12] = 1;}
                 if (passTrigger) {cuts_vector[13] = 1;}
-                if (VBFBDT_score > -0.2) {cuts_vector[14] = 1;}
+                if (VBFBDT_score > 0.2) {cuts_vector[14] = 1;} // 0.2
             }
             
             if (config.m_massRegion == "training") {
@@ -378,7 +382,7 @@ void CLoop::FillTree(double weight, int z_sample, const std::string& sampleName,
             }
 
             if (passedAllCuts) {
-                bool isVBF = sampleName.find("VBF_Ztautau") != std::string::npos || sampleName.find("VBFH") != std::string::npos || sampleName.find("VJJ") != std::string::npos || sampleName.find("Zp") != std::string::npos;
+                bool isVBF = sampleName.find("VBF_Ztautau") != std::string::npos || sampleName.find("VBFH") != std::string::npos || sampleName.find("VJJ") != std::string::npos;// || sampleName.find("Zp") != std::string::npos;
                 if (isVBF){
                     m_signalTree.m_mcWeight = weight;
                     m_signalTree.m_mass_reco = m_reco;
@@ -396,7 +400,7 @@ void CLoop::FillTree(double weight, int z_sample, const std::string& sampleName,
                     m_signalTree.m_gapjets = n_gapjets;
                     m_signalTree.m_bjets = n_bjets;
                     m_signalTree.m_event_number = eventNumber;
-                    m_signalTree.m_passedTriggers = *PassedTriggers;
+                    //m_signalTree.m_passedTriggers = *PassedTriggers;
                     m_signalTree.FillTree();
                 } else{
                     m_backgroundTree.m_mcWeight = weight;
@@ -415,7 +419,7 @@ void CLoop::FillTree(double weight, int z_sample, const std::string& sampleName,
                     m_backgroundTree.m_gapjets = n_gapjets;
                     m_backgroundTree.m_bjets = n_bjets;
                     m_backgroundTree.m_event_number = eventNumber;
-                    m_backgroundTree.m_passedTriggers = *PassedTriggers;
+                    //m_backgroundTree.m_passedTriggers = *PassedTriggers;
                     m_backgroundTree.FillTree();
                 }
             }

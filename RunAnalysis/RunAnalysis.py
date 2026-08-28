@@ -139,7 +139,7 @@ def createConfigObject(jobTypeArgument,verbosity,region,massRegion):
     makeReweighting = 'r' in jobTypeArgument
     if verbosity=="DEBUG" and makeReweighting:
         print(DEBUG("Making reweighting!"))
-    mvaWeightsPath = findMainPath()+"/MVA-VBF-TauTau/dataset/weights/10Folds_VBFBDT.weights.xml"#"/data/MVA-Weights/10Folds_BDT-0.3.weights.xml"
+    mvaWeightsPath = findMainPath()+"/MVA-VBF-TauTau/dataset/weights/10Folds_TESTBDT.weights.xml"#"/data/MVA-Weights/10Folds_BDT-0.3.weights.xml"
     if verbosity=="DEBUG":
         print(DEBUG("MVA weights path: "), mvaWeightsPath)
     return CLoopConfig(makeHistograms,makeNTuples,makeReweighting,mvaWeightsPath,region,massRegion)
@@ -154,10 +154,10 @@ def createArgumentParser():
     parser.add_argument("--verbosity", help="Verbosity level.",type=str,default="INFO",choices=["INFO","DEBUG"])
     parser.add_argument("--treeName", help="Name of the tree to run over.",type=str,default="T_s2thh_NOMINAL")
     parser.add_argument("--jobType", help="Type of job to run.",type=str,default="h",choices=["h","n","hn","hr","hnr"])
-    parser.add_argument("--outputDir", help="Path of to the directory used to store the processed samples.",type=str,default=findMainPath()+"/Results")
+    parser.add_argument("--outputDir", help="Path of to the directory used to store the processed samples.",type=str,default=findMainPath()+"/Results")#/test
     parser.add_argument("--j", help="Number of cores to use.",type=int,default=1)
     parser.add_argument("--region", help="",type=str,default="SR",choices=["all","SR","CR","CRa","CRb","CRc"])
-    parser.add_argument("--massRegion", help="",type=str,default="low",choices=["low","mid","high","training"])
+    parser.add_argument("--massRegion", help="",type=str,default="low",choices=["low","mid","high","training","all"])
     return parser
 
 def getArgumentTupleForSampleGroup(treeName,sampleGroup,verbosity,outputPath,massRegion,analysisConfig):
@@ -256,4 +256,4 @@ if __name__ == "__main__":
 
     # Say goodbye and print the time taken
     print(HEADER("Analysis done"))
-    print(DEBUG("Time taken: "+str(time.time()-initTime)))
+    print(DEBUG("Time taken: "+str(time.time()-initTime)+" s"))

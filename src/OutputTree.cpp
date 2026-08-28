@@ -27,3 +27,10 @@ OutputTree::OutputTree(const char* treeName, const char* treeDescription){
     m_Tree->Branch("n_bjets", &m_bjets);
     m_Tree->Branch("passedTriggers", &m_passedTriggers);
 }
+
+//OutputTree& operator=(const OutputTree& other) {
+//    if (this != &other) { // Prevent self-assignment
+//        m_Tree = std::make_unique<TTree>(*other.m_Tree); // Deep copy
+//    }
+//    return *this;
+//}

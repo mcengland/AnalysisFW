@@ -1,0 +1,42 @@
+# --------------------------------------------------
+# Configuration for SignificanceScan.py
+# --------------------------------------------------
+
+# Path to the directory containing the ROOT files
+path: /eos/user/m/mienglan/Documents/Documents/AnalysisFW/Results/histograms/loosernn/high/root/
+
+# Comma-separated list of background ROOT file names
+background_files: VV_QCD.root, VV_EWK.root, Wjets.root, W_EWK.root, Zjets.root, ttbar.root, singletop.root, Higgs.root, Ztautau_sh2214.root
+
+# Comma-separated list of signal ROOT file names
+signal_files: Zp200.root, Zp300.root, Zp400.root, Zp500.root, Zp600.root, Zp700.root, Zp800.root, Zp900.root, Zp1000.root, Zp1200.root, Zp1400.root, Zp1600.root
+
+# Special signal blocks: each entry defines its own signal and background samples.
+# Uncomment and adjust as needed.
+special_signal:
+  - signal_samples: Signal_PoPy.root, VBF_Higgs.root
+    bg_samples: VV_QCD.root, VV_EWK.root, Wjets.root, W_EWK.root, Zjets.root, ttbar.root, singletop.root, Higgs.root, Ztautau_sh2214.root
+  - signal_samples: Signal_sherpa.root, VBF_Higgs.root
+    bg_samples: VV_QCD.root, VV_EWK.root, Wjets.root, W_EWK.root, Zjets.root, ttbar.root, singletop.root, Higgs.root, Ztautau_sh2214.root
+  - signal_samples: Signal_MG.root
+    bg_samples: VV_QCD.root, VV_EWK.root, Wjets.root, W_EWK.root, Zjets.root, ttbar.root, singletop.root, Higgs.root, Ztautau_sh2214.root
+
+
+# Name of the histogram to use for the cut scan
+histogram: bdtScore
+
+# Scaling factors: samples (without .root) to scale before summing.
+# Uncomment and adjust as needed.
+scaling_factors:
+  - Signal_truth_PoPy: 0.793
+  - Signal_truth_Sherpa: 0.923
+  - Signal_truth_MG: 1.465
+
+# Cut values to scan (events to the RIGHT of each cut are integrated)
+cut_values: [-1, -0.4, -0.15, 0.1, 0.3, 0.5, 0.75, 1.0]
+
+# Bin edges for rebinning the histogram (optional, remove to skip rebinning)
+bin_edges: [-1.0, -0.8, -0.6, -0.4, -0.15, 0.1, 0.3, 0.5, 0.75, 1.0]
+
+# Font size for all plot text elements (default: 16)
+# font_size: 16
